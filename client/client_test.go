@@ -38,10 +38,9 @@ func TestNewAndClose(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestCreateStudy(t *testing.T) {
+func TestCreateDiagram(t *testing.T) {
 	c, err := client.New()
 	assert.NoError(t, err)
-
 	defer func() {
 		err = c.Close()
 		assert.NoError(t, err)
@@ -49,10 +48,10 @@ func TestCreateStudy(t *testing.T) {
 
 	ctx := context.Background()
 
-	testStudyName := "Hello_World"
+	testDiagramName := "HelloWorld"
 
-	study, err := c.CreateStudy(ctx, testStudyName)
+	diagram, err := c.CreateDiagram(ctx, testDiagramName)
 	assert.NoError(t, err)
 
-	assert.Equal(t, testStudyName, study.Name)
+	assert.Equal(t, testDiagramName, diagram.Name)
 }

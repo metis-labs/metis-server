@@ -6,24 +6,34 @@ import (
 	"net"
 
 	"google.golang.org/grpc"
-
 	pb "oss.navercorp.com/metis/metis-server/api"
+	"oss.navercorp.com/metis/metis-server/server/database"
 )
 
 type Server struct {
+	db         database.Database
 	grpcServer *grpc.Server
 }
 
-func (s *Server) CreateStudy(_ context.Context, req *pb.CreateStudyRequest) (*pb.CreateStudyResponse, error) {
-	return &pb.CreateStudyResponse{
-		Study: &pb.Study{
-			Name: req.StudyName,
+func (s *Server) CreateDiagram(
+	ctx context.Context,
+	req *pb.CreateDiagramRequest,
+) (*pb.CreateDiagramResponse, error) {
+	diagram, err := s.db.CreateDiagram(ctx, req.DiagramName)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.CreateDiagramResponse{
+		Diagram: &pb.Diagram{
+			Name: diagram.Name,
 		},
 	}, nil
 }
 
-func NewServer() (*Server, error) {
+func NewServer(db database.Database) (*Server, error) {
 	rpcServer := &Server{
+		db:         db,
 		grpcServer: grpc.NewServer(),
 	}
 	pb.RegisterMetisServer(rpcServer.grpcServer, rpcServer)

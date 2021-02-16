@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
-
 	pb "oss.navercorp.com/metis/metis-server/api"
 )
 
@@ -37,16 +36,16 @@ func (c *Client) Close() error {
 	return c.conn.Close()
 }
 
-func (c *Client) CreateStudy(ctx context.Context, studyName string) (*pb.Study, error) {
+func (c *Client) CreateDiagram(ctx context.Context, diagramName string) (*pb.Diagram, error) {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	res, err := c.client.CreateStudy(ctx, &pb.CreateStudyRequest{
-		StudyName: studyName,
+	res, err := c.client.CreateDiagram(ctx, &pb.CreateDiagramRequest{
+		DiagramName: diagramName,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return res.Study, nil
+	return res.Diagram, nil
 }
