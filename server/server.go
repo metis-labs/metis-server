@@ -1,11 +1,11 @@
 package server
 
 import (
-	"oss.navercorp.com/metis/metis-server/server/api"
+	"oss.navercorp.com/metis/metis-server/server/rpc"
 )
 
 type Server struct {
-	rpcServer *api.RPCServer
+	rpcServer *rpc.Server
 
 	shutdown   bool
 	shutdownCh chan struct{}
@@ -14,7 +14,7 @@ type Server struct {
 const rpcPort = 10118
 
 func New() (*Server, error) {
-	rpcServer, err := api.NewRPCServer()
+	rpcServer, err := rpc.NewServer()
 	if err != nil {
 		return nil, err
 	}

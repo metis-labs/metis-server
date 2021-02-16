@@ -1,4 +1,4 @@
-package api
+package rpc
 
 import (
 	"context"
@@ -7,23 +7,23 @@ import (
 
 	"google.golang.org/grpc"
 
-	pb "oss.navercorp.com/metis/metis-server/proto"
+	pb "oss.navercorp.com/metis/metis-server/api"
 )
 
-type RPCServer struct {
+type Server struct {
 	grpcServer *grpc.Server
 }
 
-func (s *RPCServer) CreateStudy(_ context.Context, req *pb.CreateStudyRequest) (*pb.CreateStudyResponse, error) {
+func (s *Server) CreateStudy(_ context.Context, req *pb.CreateStudyRequest) (*pb.CreateStudyResponse, error) {
 	return &pb.CreateStudyResponse{
 		Study: &pb.Study{
-			Name:  req.StudyName,
+			Name: req.StudyName,
 		},
 	}, nil
 }
 
-func NewRPCServer() (*RPCServer, error) {
-	rpcServer := &RPCServer{
+func NewServer() (*Server, error) {
+	rpcServer := &Server{
 		grpcServer: grpc.NewServer(),
 	}
 	pb.RegisterMetisServer(rpcServer.grpcServer, rpcServer)
@@ -32,7 +32,7 @@ func NewRPCServer() (*RPCServer, error) {
 }
 
 // `Start` starts to handle requests on incoming connections.
-func (s *RPCServer) Start(rpcPort int) error {
+func (s *Server) Start(rpcPort int) error {
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", rpcPort))
 	if err != nil {
 		return err
@@ -51,12 +51,12 @@ func (s *RPCServer) Start(rpcPort int) error {
 }
 
 // GracefulStop stops the gRPC server gracefully.
-func (s *RPCServer) GracefulStop() {
+func (s *Server) GracefulStop() {
 	s.grpcServer.GracefulStop()
 }
 
 // Stop stops the gRPC server. It immediately closes all open
 // connections and listeners.
-func (s *RPCServer) Stop() {
+func (s *Server) Stop() {
 	s.grpcServer.Stop()
 }

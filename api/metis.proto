@@ -1,5 +1,5 @@
 syntax = "proto3";
-package proto;
+package api;
 
 service Metis {
     rpc CreateStudy (CreateStudyRequest) returns (CreateStudyResponse);

@@ -6,7 +6,7 @@ import (
 
 	"google.golang.org/grpc"
 
-	pb "oss.navercorp.com/metis/metis-server/proto"
+	pb "oss.navercorp.com/metis/metis-server/api"
 )
 
 const (
