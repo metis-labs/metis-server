@@ -1,0 +1,19 @@
+syntax = "proto3";
+package proto;
+
+service Metis {
+    rpc CreateStudy (CreateStudyRequest) returns (CreateStudyResponse);
+}
+
+message CreateStudyRequest {
+    string study_name = 1;
+}
+
+message CreateStudyResponse {
+    Study study = 1;
+}
+
+message Study {
+    uint32 id = 1;
+    string name = 2;
+}
