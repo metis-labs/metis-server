@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
 	"oss.navercorp.com/metis/metis-server/client"
 	"oss.navercorp.com/metis/metis-server/server"
 )
@@ -55,31 +56,22 @@ func TestCreateModel(t *testing.T) {
 	assert.Equal(t, testModelName, model.Name)
 }
 
-func TestListProjects(t *testing.T) {
-	c, err := client.New()
-	assert.NoError(t, err)
-	defer func() {
-		err = c.Close()
+func TestProject(t *testing.T) {
+	t.Run("create project test", func(t *testing.T) {
+		c, err := client.New()
 		assert.NoError(t, err)
-	}()
+		defer func() {
+			err = c.Close()
+			assert.NoError(t, err)
+		}()
 
-	projects, err := c.ListProjects(context.Background())
-	assert.NoError(t, err)
-	t.Log(projects)
-}
-
-func TestCreateProject(t *testing.T) {
-	c, err := client.New()
-	assert.NoError(t, err)
-	defer func() {
-		err = c.Close()
+		testProjectName := "testProject"
+		pbProject, err := c.CreateProject(context.Background(), testProjectName)
 		assert.NoError(t, err)
-	}()
+		assert.Equal(t, testProjectName, pbProject.Name)
 
-	_, err = c.CreateProject(context.Background(), "testProject")
-	assert.NoError(t, err)
-
-	projects, err := c.ListProjects(context.Background())
-	assert.NoError(t, err)
-	t.Log(projects)
+		projects, err := c.ListProjects(context.Background())
+		assert.NoError(t, err)
+		assert.NotEmpty(t, projects)
+	})
 }

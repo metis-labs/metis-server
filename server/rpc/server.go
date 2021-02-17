@@ -7,6 +7,7 @@ import (
 
 	"google.golang.org/grpc"
 	pb "oss.navercorp.com/metis/metis-server/api"
+	"oss.navercorp.com/metis/metis-server/api/converter"
 	"oss.navercorp.com/metis/metis-server/server/database"
 )
 
@@ -35,13 +36,13 @@ func (s *Server) CreateProject(
 	ctx context.Context,
 	req *pb.CreateProjectRequest,
 ) (*pb.CreateProjectResponse, error) {
-	_, err := s.db.CreateProject(ctx, req.ProjectName)
+	project, err := s.db.CreateProject(ctx, req.ProjectName)
 	if err != nil {
 		return nil, err
 	}
 
 	return &pb.CreateProjectResponse{
-		// Project: converter.toProject(project),
+		Project: converter.ToProject(project),
 	}, nil
 
 }
@@ -50,13 +51,13 @@ func (s *Server) ListProjects(
 	ctx context.Context,
 	req *pb.ListProjectsRequest,
 ) (*pb.ListProjectsResponse, error) {
-	_, err := s.db.ListProjects(ctx)
+	projects, err := s.db.ListProjects(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	return &pb.ListProjectsResponse{
-		// Projects: converter.toProjects(projects),
+		Projects: converter.ToProjects(projects),
 	}, nil
 }
 
