@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
 	"oss.navercorp.com/metis/metis-server/client"
 	"oss.navercorp.com/metis/metis-server/server"
 )
@@ -38,7 +37,7 @@ func TestNewAndClose(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestCreateDiagram(t *testing.T) {
+func TestCreateModel(t *testing.T) {
 	c, err := client.New()
 	assert.NoError(t, err)
 	defer func() {
@@ -48,10 +47,39 @@ func TestCreateDiagram(t *testing.T) {
 
 	ctx := context.Background()
 
-	testDiagramName := "HelloWorld"
+	testModelName := "HelloWorld"
 
-	diagram, err := c.CreateDiagram(ctx, testDiagramName)
+	model, err := c.CreateModel(ctx, testModelName)
 	assert.NoError(t, err)
 
-	assert.Equal(t, testDiagramName, diagram.Name)
+	assert.Equal(t, testModelName, model.Name)
+}
+
+func TestListProjects(t *testing.T) {
+	c, err := client.New()
+	assert.NoError(t, err)
+	defer func() {
+		err = c.Close()
+		assert.NoError(t, err)
+	}()
+
+	projects, err := c.ListProjects(context.Background())
+	assert.NoError(t, err)
+	t.Log(projects)
+}
+
+func TestCreateProject(t *testing.T) {
+	c, err := client.New()
+	assert.NoError(t, err)
+	defer func() {
+		err = c.Close()
+		assert.NoError(t, err)
+	}()
+
+	_, err = c.CreateProject(context.Background(), "testProject")
+	assert.NoError(t, err)
+
+	projects, err := c.ListProjects(context.Background())
+	assert.NoError(t, err)
+	t.Log(projects)
 }

@@ -31,6 +31,35 @@ func (s *Server) CreateModel(
 	}, nil
 }
 
+func (s *Server) CreateProject(
+	ctx context.Context,
+	req *pb.CreateProjectRequest,
+) (*pb.CreateProjectResponse, error) {
+	_, err := s.db.CreateProject(ctx, req.ProjectName)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.CreateProjectResponse{
+		// Project: converter.toProject(project),
+	}, nil
+
+}
+
+func (s *Server) ListProjects(
+	ctx context.Context,
+	req *pb.ListProjectsRequest,
+) (*pb.ListProjectsResponse, error) {
+	_, err := s.db.ListProjects(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.ListProjectsResponse{
+		// Projects: converter.toProjects(projects),
+	}, nil
+}
+
 func NewServer(db database.Database) (*Server, error) {
 	rpcServer := &Server{
 		db:         db,
@@ -41,7 +70,7 @@ func NewServer(db database.Database) (*Server, error) {
 	return rpcServer, nil
 }
 
-// `Start` starts to handle requests on incoming connections.
+// Start starts to handle requests on incoming connections.
 func (s *Server) Start(rpcPort int) error {
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", rpcPort))
 	if err != nil {

@@ -3,6 +3,7 @@ package mongodb
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -64,6 +65,43 @@ func (d *Client) CreateModel(ctx context.Context, name string) (*database.Model,
 		ID:   result.InsertedID.(primitive.ObjectID),
 		Name: name,
 	}, nil
+}
+
+func (d *Client) CreateProject(ctx context.Context, name string) (*database.Project, error) {
+	result, err := d.client.Database(dbName).Collection("projects").InsertOne(ctx, bson.M{
+		"name": name,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &database.Project{
+		ID:   result.InsertedID.(primitive.ObjectID),
+		Name: name,
+	}, nil
+}
+
+func (d *Client) ListProjects(ctx context.Context) ([]*database.Project, error) {
+	cursor, err := d.client.Database(dbName).Collection("projects").Find(ctx, bson.M{}, options.Find())
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := cursor.Close(ctx); err != nil {
+			log.Print(err)
+		}
+	}()
+
+	var projects []*database.Project
+	for cursor.Next(ctx) {
+		var project database.Project
+		if err := cursor.Decode(&project); err != nil {
+			return nil, err
+		}
+		projects = append(projects, &project)
+	}
+
+	return projects, nil
 }
 
 // Close closes the client, releasing any open resources.

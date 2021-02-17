@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
-
 	pb "oss.navercorp.com/metis/metis-server/api"
 )
 
@@ -37,16 +36,42 @@ func (c *Client) Close() error {
 	return c.conn.Close()
 }
 
-func (c *Client) CreateDiagram(ctx context.Context, diagramName string) (*pb.Diagram, error) {
+func (c *Client) CreateModel(ctx context.Context, modelName string) (*pb.Model, error) {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	res, err := c.client.CreateDiagram(ctx, &pb.CreateDiagramRequest{
-		DiagramName: diagramName,
+	res, err := c.client.CreateModel(ctx, &pb.CreateModelRequest{
+		ModelName: modelName,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return res.Diagram, nil
+	return res.Model, nil
+}
+
+func (c *Client) CreateProject(ctx context.Context, name string) (*pb.Project, error) {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	res, err := c.client.CreateProject(ctx, &pb.CreateProjectRequest{
+		ProjectName: name,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return res.Project, nil
+}
+
+func (c *Client) ListProjects(ctx context.Context) ([]*pb.Project, error) {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	res, err := c.client.ListProjects(ctx, &pb.ListProjectsRequest{})
+	if err != nil {
+		return nil, err
+	}
+
+	return res.Projects, nil
 }

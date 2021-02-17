@@ -5,6 +5,6 @@ proto:
 	cd api && $(MAKE)
 
 test:
-	go test ./...
+	go test -v ./...
 
 .PHONY: build proto test

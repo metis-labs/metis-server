@@ -11,9 +11,16 @@ type Model struct {
 	Name string             `bson:"name"`
 }
 
+type Project struct {
+	ID   primitive.ObjectID `bson:"_id"`
+	Name string             `bson:"name"`
+}
+
 type Database interface {
 	Dial(ctx context.Context) error
 	Close(ctx context.Context) error
 
 	CreateModel(ctx context.Context, name string) (*Model, error)
+	CreateProject(ctx context.Context, name string) (*Project, error)
+	ListProjects(ctx context.Context) ([]*Project, error)
 }
