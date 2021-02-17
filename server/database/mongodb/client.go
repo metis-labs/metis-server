@@ -52,15 +52,15 @@ func (d *Client) Dial(ctx context.Context) error {
 	return nil
 }
 
-func (d *Client) CreateDiagram(ctx context.Context, name string) (*database.Diagram, error) {
-	result, err := d.client.Database(dbName).Collection("diagrams").InsertOne(ctx, bson.M{
+func (d *Client) CreateModel(ctx context.Context, name string) (*database.Model, error) {
+	result, err := d.client.Database(dbName).Collection("models").InsertOne(ctx, bson.M{
 		"name": name,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return &database.Diagram{
+	return &database.Model{
 		ID:   result.InsertedID.(primitive.ObjectID),
 		Name: name,
 	}, nil

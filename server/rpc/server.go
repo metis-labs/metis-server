@@ -15,18 +15,18 @@ type Server struct {
 	grpcServer *grpc.Server
 }
 
-func (s *Server) CreateDiagram(
+func (s *Server) CreateModel(
 	ctx context.Context,
-	req *pb.CreateDiagramRequest,
-) (*pb.CreateDiagramResponse, error) {
-	diagram, err := s.db.CreateDiagram(ctx, req.DiagramName)
+	req *pb.CreateModelRequest,
+) (*pb.CreateModelResponse, error) {
+	model, err := s.db.CreateModel(ctx, req.ModelName)
 	if err != nil {
 		return nil, err
 	}
 
-	return &pb.CreateDiagramResponse{
-		Diagram: &pb.Diagram{
-			Name: diagram.Name,
+	return &pb.CreateModelResponse{
+		Model: &pb.Model{
+			Name: model.Name,
 		},
 	}, nil
 }

@@ -6,7 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type Diagram struct {
+type Model struct {
 	ID   primitive.ObjectID `bson:"_id"`
 	Name string             `bson:"name"`
 }
@@ -15,5 +15,5 @@ type Database interface {
 	Dial(ctx context.Context) error
 	Close(ctx context.Context) error
 
-	CreateDiagram(ctx context.Context, name string) (*Diagram, error)
+	CreateModel(ctx context.Context, name string) (*Model, error)
 }
