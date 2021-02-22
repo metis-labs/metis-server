@@ -7,6 +7,7 @@ import (
 
 func ToProject(project *database.Project) *pb.Project {
 	return &pb.Project{
+		Id: project.ID.String(),
 		Name: project.Name,
 	}
 }

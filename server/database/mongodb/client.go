@@ -28,11 +28,6 @@ func NewClient() *Client {
 	return &Client{}
 }
 
-func Dial(ctx context.Context) (*Client, error) {
-	cli := NewClient()
-	return cli, cli.Dial(ctx)
-}
-
 func (d *Client) Dial(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, dialTimeout*time.Second)
 	defer cancel()
@@ -62,7 +57,7 @@ func (d *Client) CreateModel(ctx context.Context, name string) (*database.Model,
 	}
 
 	return &database.Model{
-		ID:   result.InsertedID.(primitive.ObjectID),
+		ID:   database.ID(result.InsertedID.(primitive.ObjectID).Hex()),
 		Name: name,
 	}, nil
 }
@@ -76,7 +71,7 @@ func (d *Client) CreateProject(ctx context.Context, name string) (*database.Proj
 	}
 
 	return &database.Project{
-		ID:   result.InsertedID.(primitive.ObjectID),
+		ID:   database.ID(result.InsertedID.(primitive.ObjectID).Hex()),
 		Name: name,
 	}, nil
 }
@@ -95,9 +90,16 @@ func (d *Client) ListProjects(ctx context.Context) ([]*database.Project, error) 
 	var projects []*database.Project
 	for cursor.Next(ctx) {
 		var project database.Project
+		idHolder := struct {
+			ID    primitive.ObjectID `bson:"_id"`
+		}{}
+		if err := cursor.Decode(&idHolder); err != nil {
+			return nil, err
+		}
 		if err := cursor.Decode(&project); err != nil {
 			return nil, err
 		}
+		project.ID = database.ID(idHolder.ID.Hex())
 		projects = append(projects, &project)
 	}
 

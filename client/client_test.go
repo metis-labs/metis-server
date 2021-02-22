@@ -30,15 +30,33 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestNewAndClose(t *testing.T) {
-	c, err := client.New()
-	assert.NoError(t, err)
+func TestClient(t *testing.T) {
+	t.Run("new/close test", func(t *testing.T) {
+		c, err := client.New()
+		assert.NoError(t, err)
 
-	err = c.Close()
-	assert.NoError(t, err)
+		err = c.Close()
+		assert.NoError(t, err)
+	})
 }
 
-func TestCreateModel(t *testing.T) {
+func TestModel(t *testing.T) {
+	c, err := client.New()
+	assert.NoError(t, err)
+	defer func() {
+		assert.NoError(t, c.Close())
+	}()
+
+	t.Run("create model test", func(t *testing.T) {
+		ctx := context.Background()
+
+		model, err := c.CreateModel(ctx, t.Name())
+		assert.NoError(t, err)
+		assert.Equal(t, t.Name(), model.Name)
+	})
+}
+
+func TestProject(t *testing.T) {
 	c, err := client.New()
 	assert.NoError(t, err)
 	defer func() {
@@ -46,29 +64,10 @@ func TestCreateModel(t *testing.T) {
 		assert.NoError(t, err)
 	}()
 
-	ctx := context.Background()
-
-	testModelName := "HelloWorld"
-
-	model, err := c.CreateModel(ctx, testModelName)
-	assert.NoError(t, err)
-
-	assert.Equal(t, testModelName, model.Name)
-}
-
-func TestProject(t *testing.T) {
 	t.Run("create project test", func(t *testing.T) {
-		c, err := client.New()
+		pbProject, err := c.CreateProject(context.Background(), t.Name())
 		assert.NoError(t, err)
-		defer func() {
-			err = c.Close()
-			assert.NoError(t, err)
-		}()
-
-		testProjectName := "testProject"
-		pbProject, err := c.CreateProject(context.Background(), testProjectName)
-		assert.NoError(t, err)
-		assert.Equal(t, testProjectName, pbProject.Name)
+		assert.Equal(t, t.Name(), pbProject.Name)
 
 		projects, err := c.ListProjects(context.Background())
 		assert.NoError(t, err)

@@ -11,9 +11,51 @@ import (
 	"oss.navercorp.com/metis/metis-server/server/database"
 )
 
+// Server is a normal server that processes the logic requested by the client.
 type Server struct {
 	db         database.Database
 	grpcServer *grpc.Server
+}
+
+// NewServer creates a new instance of Server.
+func NewServer(db database.Database) (*Server, error) {
+	rpcServer := &Server{
+		db:         db,
+		grpcServer: grpc.NewServer(),
+	}
+	pb.RegisterMetisServer(rpcServer.grpcServer, rpcServer)
+
+	return rpcServer, nil
+}
+
+// Start starts to handle requests on incoming connections.
+func (s *Server) Start(rpcPort int) error {
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", rpcPort))
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("RPCServer is running on %d", rpcPort)
+
+	go func() {
+		if err := s.grpcServer.Serve(listener); err != nil {
+			fmt.Printf("fail to serve: %s", err.Error())
+		} else {
+			fmt.Printf("grpc server closed")
+		}
+	}()
+	return nil
+}
+
+// GracefulStop stops the gRPC server gracefully.
+func (s *Server) GracefulStop() {
+	s.grpcServer.GracefulStop()
+}
+
+// Stop stops the gRPC server. It immediately closes all open
+// connections and listeners.
+func (s *Server) Stop() {
+	s.grpcServer.Stop()
 }
 
 func (s *Server) CreateModel(
@@ -59,44 +101,4 @@ func (s *Server) ListProjects(
 	return &pb.ListProjectsResponse{
 		Projects: converter.ToProjects(projects),
 	}, nil
-}
-
-func NewServer(db database.Database) (*Server, error) {
-	rpcServer := &Server{
-		db:         db,
-		grpcServer: grpc.NewServer(),
-	}
-	pb.RegisterMetisServer(rpcServer.grpcServer, rpcServer)
-
-	return rpcServer, nil
-}
-
-// Start starts to handle requests on incoming connections.
-func (s *Server) Start(rpcPort int) error {
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", rpcPort))
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("RPCServer is running on %d", rpcPort)
-
-	go func() {
-		if err := s.grpcServer.Serve(listener); err != nil {
-			fmt.Printf("fail to serve: %s", err.Error())
-		} else {
-			fmt.Printf("grpc server closed")
-		}
-	}()
-	return nil
-}
-
-// GracefulStop stops the gRPC server gracefully.
-func (s *Server) GracefulStop() {
-	s.grpcServer.GracefulStop()
-}
-
-// Stop stops the gRPC server. It immediately closes all open
-// connections and listeners.
-func (s *Server) Stop() {
-	s.grpcServer.Stop()
 }

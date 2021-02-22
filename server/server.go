@@ -9,6 +9,7 @@ import (
 	"oss.navercorp.com/metis/metis-server/server/rpc"
 )
 
+// Server receives requests from the client, stores data in the database,
 type Server struct {
 	rpcServer *rpc.Server
 	db        database.Database
@@ -19,6 +20,7 @@ type Server struct {
 
 const rpcPort = 10118
 
+// New creates a new instance of Server.
 func New() (*Server, error) {
 	dbClient := mongodb.NewClient()
 	rpcServer, err := rpc.NewServer(dbClient)
@@ -33,6 +35,7 @@ func New() (*Server, error) {
 	}, nil
 }
 
+// Start starts the server by opening the rpc port.
 func (s *Server) Start() error {
 	if err := s.db.Dial(context.Background()); err != nil {
 		return err
@@ -41,6 +44,7 @@ func (s *Server) Start() error {
 	return s.rpcServer.Start(rpcPort)
 }
 
+// Shutdown shuts down this server.
 func (s *Server) Shutdown(graceful bool) error {
 	if s.shutdown {
 		return nil
@@ -62,6 +66,7 @@ func (s *Server) Shutdown(graceful bool) error {
 	return nil
 }
 
+// ShutdownCh returns the shutdown channel.
 func (s *Server) ShutdownCh() <-chan struct{} {
 	return s.shutdownCh
 }
