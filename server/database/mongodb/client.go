@@ -63,16 +63,19 @@ func (d *Client) CreateModel(ctx context.Context, name string) (*database.Model,
 }
 
 func (d *Client) CreateProject(ctx context.Context, name string) (*database.Project, error) {
+	now := time.Now()
 	result, err := d.client.Database(dbName).Collection("projects").InsertOne(ctx, bson.M{
-		"name": name,
+		"name":       name,
+		"created_at": now,
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	return &database.Project{
-		ID:   database.ID(result.InsertedID.(primitive.ObjectID).Hex()),
-		Name: name,
+		ID:        database.ID(result.InsertedID.(primitive.ObjectID).Hex()),
+		Name:      name,
+		CreatedAt: now,
 	}, nil
 }
 
@@ -91,7 +94,7 @@ func (d *Client) ListProjects(ctx context.Context) ([]*database.Project, error) 
 	for cursor.Next(ctx) {
 		var project database.Project
 		idHolder := struct {
-			ID    primitive.ObjectID `bson:"_id"`
+			ID primitive.ObjectID `bson:"_id"`
 		}{}
 		if err := cursor.Decode(&idHolder); err != nil {
 			return nil, err

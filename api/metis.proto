@@ -35,7 +35,7 @@ message Project {
     string id = 1;
     string name = 2;
     map<string, Model> models = 3;
-    string selectedBlockID = 4;
+    string selected_block_id = 4;
 }
 
 enum DiagramType {
@@ -79,7 +79,7 @@ message Model {
     string id = 1;
     string name = 2;
     DiagramType type = 3;
-    DiagramInfo diagramInfo = 4;
+    DiagramInfo diagram_info = 4;
     map<string, Dependency> dependencies = 5;
     map<string, Block> blocks = 6;
     map<string, Link> links = 7;

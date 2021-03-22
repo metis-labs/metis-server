@@ -6,9 +6,15 @@ import (
 )
 
 func ToProject(project *database.Project) *pb.Project {
+	// pbCreatedAt, err := ptypes.TimestampProto(project.CreatedAt)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
 	return &pb.Project{
-		Id: project.ID.String(),
+		Id:   project.ID.String(),
 		Name: project.Name,
+		// CreatedAt: pbCreatedAt,
 	}
 }
 
