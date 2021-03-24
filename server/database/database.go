@@ -35,4 +35,5 @@ type Database interface {
 	CreateModel(ctx context.Context, name string) (*Model, error)
 	CreateProject(ctx context.Context, name string) (*Project, error)
 	ListProjects(ctx context.Context) ([]*Project, error)
+	DeleteProject(ctx context.Context, id string) error
 }

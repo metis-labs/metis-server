@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
 	"oss.navercorp.com/metis/metis-server/client"
 	"oss.navercorp.com/metis/metis-server/server"
 )
@@ -57,20 +56,26 @@ func TestModel(t *testing.T) {
 }
 
 func TestProject(t *testing.T) {
-	c, err := client.New()
+	cli, err := client.New()
 	assert.NoError(t, err)
 	defer func() {
-		err = c.Close()
+		err = cli.Close()
 		assert.NoError(t, err)
 	}()
 
-	t.Run("create project test", func(t *testing.T) {
-		pbProject, err := c.CreateProject(context.Background(), t.Name())
+	t.Run("create/delete project test", func(t *testing.T) {
+		pbProject, err := cli.CreateProject(context.Background(), t.Name())
 		assert.NoError(t, err)
 		assert.Equal(t, t.Name(), pbProject.Name)
 
-		projects, err := c.ListProjects(context.Background())
+		projects, err := cli.ListProjects(context.Background())
 		assert.NoError(t, err)
 		assert.NotEmpty(t, projects)
+
+		err = cli.DeleteProject(context.Background(), pbProject.Id)
+		assert.NoError(t, err)
+
+		err = cli.DeleteProject(context.Background(), pbProject.Id)
+		assert.NoError(t, err)
 	})
 }

@@ -48,6 +48,13 @@ func (d *Client) Dial(ctx context.Context) error {
 	return nil
 }
 
+func (d *Client) Close(ctx context.Context) error {
+	if err := d.client.Disconnect(ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (d *Client) CreateModel(ctx context.Context, name string) (*database.Model, error) {
 	result, err := d.client.Database(dbName).Collection("models").InsertOne(ctx, bson.M{
 		"name": name,
@@ -109,10 +116,15 @@ func (d *Client) ListProjects(ctx context.Context) ([]*database.Project, error) 
 	return projects, nil
 }
 
-// Close closes the client, releasing any open resources.
-func (d *Client) Close(ctx context.Context) error {
-	if err := d.client.Disconnect(ctx); err != nil {
+func (d *Client) DeleteProject(ctx context.Context, id string) error {
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
 		return err
 	}
-	return nil
+
+	_, err = d.client.Database(dbName).Collection("projects").DeleteOne(ctx, bson.M{
+		"_id": objectID,
+	})
+
+	return err
 }

@@ -75,3 +75,13 @@ func (c *Client) ListProjects(ctx context.Context) ([]*pb.Project, error) {
 
 	return res.Projects, nil
 }
+
+func (c *Client) DeleteProject(ctx context.Context, projectID string) error {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	_, err := c.client.DeleteProject(ctx, &pb.DeleteProjectRequest{
+		ProjectId: projectID,
+	})
+	return err
+}

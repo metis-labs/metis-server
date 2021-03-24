@@ -3,8 +3,10 @@ package api;
 
 service Metis {
     rpc CreateModel (CreateModelRequest) returns (CreateModelResponse);
+
     rpc CreateProject (CreateProjectRequest) returns (CreateProjectResponse);
     rpc ListProjects (ListProjectsRequest) returns (ListProjectsResponse);
+    rpc DeleteProject (DeleteProjectRequest) returns (DeleteProjectResponse);
 }
 
 message CreateModelRequest {
@@ -17,10 +19,18 @@ message CreateModelResponse {
 
 message CreateProjectRequest {
     string project_name = 1;
+    string template_id = 2;
 }
 
 message CreateProjectResponse {
     Project project = 1;
+}
+
+message DeleteProjectRequest {
+    string project_id = 1;
+}
+
+message DeleteProjectResponse {
 }
 
 message ListProjectsRequest {

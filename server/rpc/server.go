@@ -86,7 +86,6 @@ func (s *Server) CreateProject(
 	return &pb.CreateProjectResponse{
 		Project: converter.ToProject(project),
 	}, nil
-
 }
 
 func (s *Server) ListProjects(
@@ -101,4 +100,15 @@ func (s *Server) ListProjects(
 	return &pb.ListProjectsResponse{
 		Projects: converter.ToProjects(projects),
 	}, nil
+}
+
+func (s *Server) DeleteProject(
+	ctx context.Context,
+	req *pb.DeleteProjectRequest,
+) (*pb.DeleteProjectResponse, error) {
+	if err := s.db.DeleteProject(ctx, req.ProjectId); err != nil {
+		return nil, err
+	}
+
+	return &pb.DeleteProjectResponse{}, nil
 }
