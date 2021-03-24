@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 
+	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
 	pb "oss.navercorp.com/metis/metis-server/api"
 	"oss.navercorp.com/metis/metis-server/api/converter"
@@ -19,9 +20,18 @@ type Server struct {
 
 // NewServer creates a new instance of Server.
 func NewServer(db database.Database) (*Server, error) {
+	opts := []grpc.ServerOption{
+		grpc.UnaryInterceptor(grpcmiddleware.ChainUnaryServer(
+			unaryInterceptor,
+		)),
+		grpc.StreamInterceptor(grpcmiddleware.ChainStreamServer(
+			streamInterceptor,
+		)),
+	}
+
 	rpcServer := &Server{
 		db:         db,
-		grpcServer: grpc.NewServer(),
+		grpcServer: grpc.NewServer(opts...),
 	}
 	pb.RegisterMetisServer(rpcServer.grpcServer, rpcServer)
 
