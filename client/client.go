@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+
 	pb "oss.navercorp.com/metis/metis-server/api"
 )
 
@@ -74,6 +75,17 @@ func (c *Client) ListProjects(ctx context.Context) ([]*pb.Project, error) {
 	}
 
 	return res.Projects, nil
+}
+
+func (c *Client) UpdateProject(ctx context.Context, projectID string, projectName string) error {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	_, err := c.client.UpdateProject(ctx, &pb.UpdateProjectRequest{
+		ProjectId:   projectID,
+		ProjectName: projectName,
+	})
+	return err
 }
 
 func (c *Client) DeleteProject(ctx context.Context, projectID string) error {

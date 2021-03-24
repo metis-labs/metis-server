@@ -3,6 +3,12 @@ package database
 import (
 	"context"
 	"encoding/hex"
+	"errors"
+)
+
+var (
+	ErrInvalidID = errors.New("invalid id")
+	ErrNotFound  = errors.New("resource not found")
 )
 
 // ID represents ID of entity.
@@ -35,5 +41,6 @@ type Database interface {
 	CreateModel(ctx context.Context, name string) (*Model, error)
 	CreateProject(ctx context.Context, name string) (*Project, error)
 	ListProjects(ctx context.Context) ([]*Project, error)
+	UpdateProject(ctx context.Context, id string, name string) error
 	DeleteProject(ctx context.Context, id string) error
 }

@@ -2,11 +2,15 @@ package rpc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	pb "oss.navercorp.com/metis/metis-server/api"
 	"oss.navercorp.com/metis/metis-server/api/converter"
 	"oss.navercorp.com/metis/metis-server/server/database"
@@ -110,6 +114,23 @@ func (s *Server) ListProjects(
 	return &pb.ListProjectsResponse{
 		Projects: converter.ToProjects(projects),
 	}, nil
+}
+
+func (s *Server) UpdateProject(
+	ctx context.Context,
+	req *pb.UpdateProjectRequest,
+) (*pb.UpdateProjectResponse, error) {
+	if err := s.db.UpdateProject(ctx, req.ProjectId, req.ProjectName); err != nil {
+		if errors.Is(err, database.ErrNotFound) {
+			return nil, status.Error(codes.NotFound, err.Error())
+		} else if errors.Is(err, database.ErrInvalidID) {
+			return nil, status.Error(codes.InvalidArgument, err.Error())
+		}
+
+		return nil, err
+	}
+
+	return &pb.UpdateProjectResponse{}, nil
 }
 
 func (s *Server) DeleteProject(

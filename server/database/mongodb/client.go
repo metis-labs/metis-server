@@ -11,6 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+
 	"oss.navercorp.com/metis/metis-server/server/database"
 )
 
@@ -114,6 +115,34 @@ func (d *Client) ListProjects(ctx context.Context) ([]*database.Project, error) 
 	}
 
 	return projects, nil
+}
+
+func (d *Client) UpdateProject(ctx context.Context, id string, name string) error {
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return fmt.Errorf("%s: %w", id, database.ErrInvalidID)
+	}
+
+	result := d.client.Database(dbName).Collection("projects").FindOneAndUpdate(
+		ctx,
+		bson.M{
+			"_id": objectID,
+		},
+		bson.M{
+			"$set": bson.M{
+				"name": name,
+			},
+		},
+	)
+
+	if result.Err() != nil {
+		if result.Err() == mongo.ErrNoDocuments {
+			return fmt.Errorf("%s: %w", id, database.ErrNotFound)
+		}
+		return result.Err()
+	}
+
+	return nil
 }
 
 func (d *Client) DeleteProject(ctx context.Context, id string) error {
