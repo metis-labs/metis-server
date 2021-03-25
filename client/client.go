@@ -37,20 +37,6 @@ func (c *Client) Close() error {
 	return c.conn.Close()
 }
 
-func (c *Client) CreateModel(ctx context.Context, modelName string) (*pb.Model, error) {
-	ctx, cancel := context.WithTimeout(ctx, timeout)
-	defer cancel()
-
-	res, err := c.client.CreateModel(ctx, &pb.CreateModelRequest{
-		ModelName: modelName,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return res.Model, nil
-}
-
 func (c *Client) CreateProject(ctx context.Context, name string) (*pb.Project, error) {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()

@@ -42,22 +42,6 @@ func TestClient(t *testing.T) {
 	})
 }
 
-func TestModel(t *testing.T) {
-	c, err := client.New()
-	assert.NoError(t, err)
-	defer func() {
-		assert.NoError(t, c.Close())
-	}()
-
-	t.Run("create model test", func(t *testing.T) {
-		ctx := context.Background()
-
-		model, err := c.CreateModel(ctx, t.Name())
-		assert.NoError(t, err)
-		assert.Equal(t, t.Name(), model.Name)
-	})
-}
-
 func TestProject(t *testing.T) {
 	cli, err := client.New()
 	assert.NoError(t, err)

@@ -72,22 +72,6 @@ func (s *Server) Stop() {
 	s.grpcServer.Stop()
 }
 
-func (s *Server) CreateModel(
-	ctx context.Context,
-	req *pb.CreateModelRequest,
-) (*pb.CreateModelResponse, error) {
-	model, err := s.db.CreateModel(ctx, req.ModelName)
-	if err != nil {
-		return nil, err
-	}
-
-	return &pb.CreateModelResponse{
-		Model: &pb.Model{
-			Name: model.Name,
-		},
-	}, nil
-}
-
 func (s *Server) CreateProject(
 	ctx context.Context,
 	req *pb.CreateProjectRequest,
