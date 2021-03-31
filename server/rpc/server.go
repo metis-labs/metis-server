@@ -73,6 +73,7 @@ func (s *Server) Stop() {
 	s.grpcServer.Stop()
 }
 
+// CreateProject creates a new project of the given name.
 func (s *Server) CreateProject(
 	ctx context.Context,
 	req *pb.CreateProjectRequest,
@@ -87,6 +88,7 @@ func (s *Server) CreateProject(
 	}, nil
 }
 
+// ListProjects returns the list of projects.
 func (s *Server) ListProjects(
 	ctx context.Context,
 	req *pb.ListProjectsRequest,
@@ -101,6 +103,7 @@ func (s *Server) ListProjects(
 	}, nil
 }
 
+// UpdateProject updates the given project.
 func (s *Server) UpdateProject(
 	ctx context.Context,
 	req *pb.UpdateProjectRequest,
@@ -118,6 +121,7 @@ func (s *Server) UpdateProject(
 	return &pb.UpdateProjectResponse{}, nil
 }
 
+// DeleteProject deletes the given project.
 func (s *Server) DeleteProject(
 	ctx context.Context,
 	req *pb.DeleteProjectRequest,

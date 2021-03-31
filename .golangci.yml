@@ -1,0 +1,21 @@
+linters-settings:
+  goimports:
+    local-prefixes: oss.navercorp.com/metis/metis-server
+
+linters:
+  enable:
+    - bodyclose
+    - goconst
+    - gocyclo
+    - gofmt
+    - goimports
+    - golint
+    - goprintffuncname
+    - gosec
+    - interfacer
+    - lll
+    - misspell
+    - nakedret
+
+issues:
+  exclude-use-default: false

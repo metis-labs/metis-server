@@ -5,6 +5,7 @@ import (
 	"oss.navercorp.com/metis/metis-server/server/database"
 )
 
+// ToProject converts the given model to Protobuf message.
 func ToProject(project *database.Project) *pb.Project {
 	// pbCreatedAt, err := ptypes.TimestampProto(project.CreatedAt)
 	// if err != nil {
@@ -18,6 +19,7 @@ func ToProject(project *database.Project) *pb.Project {
 	}
 }
 
+// ToProjects converts the given model to Protobuf message.
 func ToProjects(projects []*database.Project) []*pb.Project {
 	var pbProjects []*pb.Project
 	for _, project := range projects {

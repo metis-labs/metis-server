@@ -7,8 +7,11 @@ import (
 )
 
 var (
+	// ErrInvalidID is returned when the given string is ID.
 	ErrInvalidID = errors.New("invalid id")
-	ErrNotFound  = errors.New("resource not found")
+
+	// ErrNotFound is returned when the requested resource cannot be found.
+	ErrNotFound = errors.New("resource not found")
 )
 
 // ID represents ID of entity.
@@ -38,7 +41,6 @@ type Database interface {
 	Dial(ctx context.Context) error
 	Close(ctx context.Context) error
 
-	CreateModel(ctx context.Context, name string) (*Model, error)
 	CreateProject(ctx context.Context, name string) (*Project, error)
 	ListProjects(ctx context.Context) ([]*Project, error)
 	UpdateProject(ctx context.Context, id string, name string) error

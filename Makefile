@@ -4,6 +4,9 @@ build:
 proto:
 	cd api && $(MAKE)
 
+lint:
+	 golangci-lint run ./...
+
 test:
 	go test -v ./...
 

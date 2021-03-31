@@ -15,6 +15,7 @@ import (
 	"oss.navercorp.com/metis/metis-server/server/database"
 )
 
+// Client is a client that connects to Mongo DB and reads or saves Metis data.
 type Client struct {
 	client *mongo.Client
 }
@@ -25,10 +26,12 @@ const (
 	dialTimeout = 10
 )
 
+// NewClient creates a new instance of Client.
 func NewClient() *Client {
 	return &Client{}
 }
 
+// Dial creates an instance of Client and dials the given MongoDB.
 func (d *Client) Dial(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, dialTimeout*time.Second)
 	defer cancel()
@@ -49,6 +52,7 @@ func (d *Client) Dial(ctx context.Context) error {
 	return nil
 }
 
+// Close all resources of this client.
 func (d *Client) Close(ctx context.Context) error {
 	if err := d.client.Disconnect(ctx); err != nil {
 		return err
@@ -56,20 +60,7 @@ func (d *Client) Close(ctx context.Context) error {
 	return nil
 }
 
-func (d *Client) CreateModel(ctx context.Context, name string) (*database.Model, error) {
-	result, err := d.client.Database(dbName).Collection("models").InsertOne(ctx, bson.M{
-		"name": name,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return &database.Model{
-		ID:   database.ID(result.InsertedID.(primitive.ObjectID).Hex()),
-		Name: name,
-	}, nil
-}
-
+// CreateProject creates a new project of the given name.
 func (d *Client) CreateProject(ctx context.Context, name string) (*database.Project, error) {
 	now := time.Now()
 	result, err := d.client.Database(dbName).Collection("projects").InsertOne(ctx, bson.M{
@@ -87,6 +78,7 @@ func (d *Client) CreateProject(ctx context.Context, name string) (*database.Proj
 	}, nil
 }
 
+// ListProjects returns the list of projects.
 func (d *Client) ListProjects(ctx context.Context) ([]*database.Project, error) {
 	cursor, err := d.client.Database(dbName).Collection("projects").Find(ctx, bson.M{}, options.Find())
 	if err != nil {
@@ -117,6 +109,7 @@ func (d *Client) ListProjects(ctx context.Context) ([]*database.Project, error) 
 	return projects, nil
 }
 
+// UpdateProject updates the given project.
 func (d *Client) UpdateProject(ctx context.Context, id string, name string) error {
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -145,6 +138,7 @@ func (d *Client) UpdateProject(ctx context.Context, id string, name string) erro
 	return nil
 }
 
+// DeleteProject deletes the given project.
 func (d *Client) DeleteProject(ctx context.Context, id string) error {
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {

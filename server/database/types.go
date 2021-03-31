@@ -2,11 +2,7 @@ package database
 
 import "time"
 
-type Model struct {
-	ID   ID     `bson:"_id_fake"`
-	Name string `bson:"name"`
-}
-
+// Project represents the metadata of the project of Metis.
 type Project struct {
 	ID        ID        `bson:"_id_fake"`
 	Name      string    `bson:"name"`
