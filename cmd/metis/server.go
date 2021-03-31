@@ -9,6 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"oss.navercorp.com/metis/metis-server/internal/log"
 	"oss.navercorp.com/metis/metis-server/server"
 )
 
@@ -56,7 +57,7 @@ func handleSignals(s *server.Server) int {
 		graceful = true
 	}
 
-	_, _ = fmt.Printf("Caught signal: %v\n", sig)
+	log.Logger.Infof("Caught signal: %v", sig)
 
 	gracefulCh := make(chan struct{})
 	go func() {
@@ -66,7 +67,7 @@ func handleSignals(s *server.Server) int {
 		close(gracefulCh)
 	}()
 
-	_, _ = fmt.Printf("Gracefully shutting down server...\n")
+	log.Logger.Info("Gracefully shutting down server...")
 
 	// Wait for shutdown or another signal
 	select {

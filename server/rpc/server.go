@@ -13,6 +13,7 @@ import (
 
 	pb "oss.navercorp.com/metis/metis-server/api"
 	"oss.navercorp.com/metis/metis-server/api/converter"
+	"oss.navercorp.com/metis/metis-server/internal/log"
 	"oss.navercorp.com/metis/metis-server/server/database"
 )
 
@@ -49,13 +50,13 @@ func (s *Server) Start(rpcPort int) error {
 		return err
 	}
 
-	fmt.Printf("RPCServer is running on %d", rpcPort)
+	log.Logger.Infof("RPCServer is running on %d", rpcPort)
 
 	go func() {
 		if err := s.grpcServer.Serve(listener); err != nil {
-			fmt.Printf("fail to serve: %s", err.Error())
+			log.Logger.Errorf("fail to serve: %s", err.Error())
 		} else {
-			fmt.Printf("grpc server closed")
+			log.Logger.Info("grpc server closed")
 		}
 	}()
 	return nil

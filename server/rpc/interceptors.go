@@ -2,10 +2,11 @@ package rpc
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"google.golang.org/grpc"
+
+	"oss.navercorp.com/metis/metis-server/internal/log"
 )
 
 func unaryInterceptor(
@@ -17,9 +18,9 @@ func unaryInterceptor(
 	start := time.Now()
 	resp, err := handler(ctx, req)
 	if err == nil {
-		fmt.Printf("RPC : %q %s", info.FullMethod, time.Since(start))
+		log.Logger.Infof("RPC : %q %s", info.FullMethod, time.Since(start))
 	} else {
-		fmt.Printf("RPC : %q %s: %q => %q", info.FullMethod, time.Since(start), req, err)
+		log.Logger.Errorf("RPC : %q %s: %q => %q", info.FullMethod, time.Since(start), req, err)
 	}
 
 	return resp, err
@@ -33,9 +34,9 @@ func streamInterceptor(
 ) error {
 	err := handler(srv, ss)
 	if err == nil {
-		fmt.Printf("stream %q => ok", info.FullMethod)
+		log.Logger.Infof("stream %q => ok", info.FullMethod)
 	} else {
-		fmt.Printf("stream %q => %s", info.FullMethod, err.Error())
+		log.Logger.Errorf("stream %q => %s", info.FullMethod, err.Error())
 	}
 
 	return err

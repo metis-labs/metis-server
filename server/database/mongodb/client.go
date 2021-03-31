@@ -3,7 +3,6 @@ package mongodb
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -12,6 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 
+	"oss.navercorp.com/metis/metis-server/internal/log"
 	"oss.navercorp.com/metis/metis-server/server/database"
 )
 
@@ -33,17 +33,17 @@ func (d *Client) Dial(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, dialTimeout*time.Second)
 	defer cancel()
 
-	fmt.Println("Connecting to MongoDB...")
+	log.Logger.Info("Connecting to MongoDB...")
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
 		return err
 	}
 
 	if err := client.Ping(ctx, readpref.Primary()); err != nil {
-		fmt.Printf("Could not connect to MongoDB: %s\n", err.Error())
+		log.Logger.Errorf("Could not connect to MongoDB: %s\n", err.Error())
 		return err
 	}
-	fmt.Println("Connected to MongoDB")
+	log.Logger.Info("Connected to MongoDB")
 
 	d.client = client
 	return nil
@@ -94,7 +94,7 @@ func (d *Client) ListProjects(ctx context.Context) ([]*database.Project, error) 
 	}
 	defer func() {
 		if err := cursor.Close(ctx); err != nil {
-			log.Print(err)
+			log.Logger.Error(err)
 		}
 	}()
 
