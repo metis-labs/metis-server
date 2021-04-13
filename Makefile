@@ -18,6 +18,6 @@ test:
 	go test -v ./...
 
 docker:
-	docker build -t reg.navercorp.com/maas/metis-server:$(METIS_VERSION) -t reg.navercorp.com/maas/metis-server:latest .
+	docker build -t reg.navercorp.com/metis/metis-server:$(METIS_VERSION) -t reg.navercorp.com/metis/metis-server:latest .
 
 .PHONY: build proto lint test docker
