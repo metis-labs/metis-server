@@ -15,55 +15,63 @@ import (
 	"oss.navercorp.com/metis/metis-server/server/database"
 )
 
+// Config is the configuration for creating a Client instance.
+type Config struct {
+	ConnectionTimeoutSec time.Duration `json:"ConnectionTimeoutSec"`
+	ConnectionURI        string        `json:"ConnectionURI"`
+	Database             string        `json:"Database"`
+	PingTimeoutSec       time.Duration `json:"PingTimeoutSec"`
+}
+
 // Client is a client that connects to Mongo DB and reads or saves Metis data.
 type Client struct {
+	config *Config
 	client *mongo.Client
 }
 
-const (
-	uri         = "mongodb://localhost:27017"
-	dbName      = "metis"
-	dialTimeout = 10
-)
-
 // NewClient creates a new instance of Client.
-func NewClient() *Client {
-	return &Client{}
+func NewClient(conf *Config) *Client {
+	return &Client{
+		config: conf,
+	}
 }
 
 // Dial creates an instance of Client and dials the given MongoDB.
-func (d *Client) Dial(ctx context.Context) error {
-	ctx, cancel := context.WithTimeout(ctx, dialTimeout*time.Second)
+func (c *Client) Dial(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, c.config.ConnectionTimeoutSec*time.Second)
 	defer cancel()
 
 	log.Logger.Info("Connecting to MongoDB...")
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(c.config.ConnectionURI))
 	if err != nil {
 		return err
 	}
 
-	if err := client.Ping(ctx, readpref.Primary()); err != nil {
+	ctxPing, cancel := context.WithTimeout(ctx, c.config.PingTimeoutSec*time.Second)
+	defer cancel()
+
+	if err := client.Ping(ctxPing, readpref.Primary()); err != nil {
 		log.Logger.Errorf("Could not connect to MongoDB: %s\n", err.Error())
 		return err
 	}
 	log.Logger.Info("Connected to MongoDB")
 
-	d.client = client
+	c.client = client
 	return nil
 }
 
 // Close all resources of this client.
-func (d *Client) Close(ctx context.Context) error {
-	if err := d.client.Disconnect(ctx); err != nil {
+func (c *Client) Close(ctx context.Context) error {
+	if err := c.client.Disconnect(ctx); err != nil {
 		return err
 	}
 	return nil
 }
 
 // CreateProject creates a new project of the given name.
-func (d *Client) CreateProject(ctx context.Context, name string) (*database.Project, error) {
+func (c *Client) CreateProject(ctx context.Context, name string) (*database.Project, error) {
 	now := time.Now()
-	result, err := d.client.Database(dbName).Collection("projects").InsertOne(ctx, bson.M{
+	result, err := c.client.Database(c.config.Database).Collection("projects").InsertOne(ctx, bson.M{
 		"name":       name,
 		"created_at": now,
 	})
@@ -79,8 +87,8 @@ func (d *Client) CreateProject(ctx context.Context, name string) (*database.Proj
 }
 
 // ListProjects returns the list of projects.
-func (d *Client) ListProjects(ctx context.Context) ([]*database.Project, error) {
-	cursor, err := d.client.Database(dbName).Collection("projects").Find(ctx, bson.M{}, options.Find())
+func (c *Client) ListProjects(ctx context.Context) ([]*database.Project, error) {
+	cursor, err := c.client.Database(c.config.Database).Collection("projects").Find(ctx, bson.M{}, options.Find())
 	if err != nil {
 		return nil, err
 	}
@@ -110,13 +118,13 @@ func (d *Client) ListProjects(ctx context.Context) ([]*database.Project, error) 
 }
 
 // UpdateProject updates the given project.
-func (d *Client) UpdateProject(ctx context.Context, id string, name string) error {
+func (c *Client) UpdateProject(ctx context.Context, id string, name string) error {
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return fmt.Errorf("%s: %w", id, database.ErrInvalidID)
 	}
 
-	result := d.client.Database(dbName).Collection("projects").FindOneAndUpdate(
+	result := c.client.Database(c.config.Database).Collection("projects").FindOneAndUpdate(
 		ctx,
 		bson.M{
 			"_id": objectID,
@@ -139,13 +147,13 @@ func (d *Client) UpdateProject(ctx context.Context, id string, name string) erro
 }
 
 // DeleteProject deletes the given project.
-func (d *Client) DeleteProject(ctx context.Context, id string) error {
+func (c *Client) DeleteProject(ctx context.Context, id string) error {
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return err
 	}
 
-	_, err = d.client.Database(dbName).Collection("projects").DeleteOne(ctx, bson.M{
+	_, err = c.client.Database(c.config.Database).Collection("projects").DeleteOne(ctx, bson.M{
 		"_id": objectID,
 	})
 

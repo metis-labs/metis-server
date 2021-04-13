@@ -21,8 +21,8 @@ type Server struct {
 const rpcPort = 10118
 
 // New creates a new instance of Server.
-func New() (*Server, error) {
-	dbClient := mongodb.NewClient()
+func New(conf *Config) (*Server, error) {
+	dbClient := mongodb.NewClient(conf.Mongo)
 	rpcServer, err := rpc.NewServer(dbClient)
 	if err != nil {
 		return nil, err

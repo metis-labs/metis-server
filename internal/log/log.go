@@ -7,7 +7,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// Logger is the default logger used by Yorkie.
+// Logger is the default logger used by Metis.
 var Logger *zap.SugaredLogger
 var rawLogger *zap.Logger
 

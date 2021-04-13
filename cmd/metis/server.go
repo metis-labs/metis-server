@@ -15,12 +15,20 @@ import (
 
 const gracefulTimeout = 10 * time.Second
 
+var (
+	mongoConnectionTimeoutSec int
+	mongoPingTimeoutSec       int
+	conf                      = server.NewConfig()
+)
+
 func newServerCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "server",
 		Short: "Starts Metis Server and runs until an interrupt is received.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			s, err := server.New()
+			conf.Mongo.ConnectionTimeoutSec = time.Duration(mongoConnectionTimeoutSec)
+			conf.Mongo.PingTimeoutSec = time.Duration(mongoPingTimeoutSec)
+			s, err := server.New(conf)
 			if err != nil {
 				return err
 			}
@@ -84,6 +92,30 @@ func handleSignals(s *server.Server) int {
 
 func init() {
 	cmd := newServerCommand()
+	cmd.Flags().StringVar(
+		&conf.Mongo.ConnectionURI,
+		"mongo-connection-uri",
+		server.DefaultMongoConnectionURI,
+		"MongoDB's connection URI",
+	)
+	cmd.Flags().IntVar(
+		&mongoConnectionTimeoutSec,
+		"mongo-connection-timeout-sec",
+		server.DefaultMongoConnectionTimeoutSec,
+		"Mongo DB's connection timeout in seconds",
+	)
+	cmd.Flags().StringVar(
+		&conf.Mongo.Database,
+		"mongo-database",
+		server.DefaultMongoDatabase,
+		"Metis database name in MongoDB",
+	)
+	cmd.Flags().IntVar(
+		&mongoPingTimeoutSec,
+		"mongo-ping-timeout-sec",
+		server.DefaultMongoPingTimeoutSec,
+		"Mongo DB's ping timeout in seconds",
+	)
 
 	rootCmd.AddCommand(cmd)
 }

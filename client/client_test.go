@@ -15,7 +15,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	s, err := server.New()
+	s, err := server.New(server.NewConfig())
 	if err != nil {
 		log.Fatal(err)
 	}
