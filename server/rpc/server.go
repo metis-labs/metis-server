@@ -19,6 +19,8 @@ import (
 
 // Server is a normal server that processes the logic requested by the client.
 type Server struct {
+	pb.UnimplementedMetisServer
+
 	db         database.Database
 	grpcServer *grpc.Server
 }

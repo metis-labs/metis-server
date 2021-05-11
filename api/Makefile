@@ -1,24 +1,24 @@
 GOPATH=$(shell go env GOPATH)
 
-GO_TOOLS=github.com/gogo/protobuf/protoc-gen-gofast
+GO_TOOLS=google.golang.org/protobuf/cmd/protoc-gen-go \
+google.golang.org/grpc/cmd/protoc-gen-go-grpc
 
 PB_OUT=metis.pb.go
 
-INCLUDES= -I=. \
-	-I=$(GOPATH)/src \
-	-I=$(GOPATH)/src/github.com/gogo/protobuf/protobuf
+INCLUDES= -I=.
 
 all: $(PB_OUT)
 
-.PHONY: tools
 tools:
 	go get $(GO_TOOLS)
 
 $(PB_OUT): tools metis.proto
-	protoc metis.proto \
+	protoc ./metis.proto \
 	$(INCLUDES) \
-	--gofast_out=plugins=grpc:.
+	--go_out=. --go_opt=paths=source_relative \
+	--go-grpc_out=. --go-grpc_opt=paths=source_relative
 
-.PHONY: clean
 clean:
 	rm -f $(PB_OUT)
+
+.PHONY: clean, tools
