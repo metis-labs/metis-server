@@ -13,6 +13,7 @@ import (
 
 	"oss.navercorp.com/metis/metis-server/internal/log"
 	"oss.navercorp.com/metis/metis-server/server/database"
+	"oss.navercorp.com/metis/metis-server/server/types"
 )
 
 // Config is the configuration for creating a Client instance.
@@ -69,26 +70,29 @@ func (c *Client) Close(ctx context.Context) error {
 }
 
 // CreateProject creates a new project of the given name.
-func (c *Client) CreateProject(ctx context.Context, name string) (*database.Project, error) {
+func (c *Client) CreateProject(ctx context.Context, name string) (*types.Project, error) {
 	now := time.Now()
 	result, err := c.client.Database(c.config.Database).Collection("projects").InsertOne(ctx, bson.M{
 		"name":       name,
+		"owner":      types.UserIDFromCtx(ctx),
 		"created_at": now,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return &database.Project{
-		ID:        database.ID(result.InsertedID.(primitive.ObjectID).Hex()),
+	return &types.Project{
+		ID:        types.ID(result.InsertedID.(primitive.ObjectID).Hex()),
 		Name:      name,
 		CreatedAt: now,
 	}, nil
 }
 
 // ListProjects returns the list of projects.
-func (c *Client) ListProjects(ctx context.Context) ([]*database.Project, error) {
-	cursor, err := c.client.Database(c.config.Database).Collection("projects").Find(ctx, bson.M{}, options.Find())
+func (c *Client) ListProjects(ctx context.Context) ([]*types.Project, error) {
+	cursor, err := c.client.Database(c.config.Database).Collection("projects").Find(ctx, bson.M{
+		"owner": types.UserIDFromCtx(ctx),
+	}, options.Find())
 	if err != nil {
 		return nil, err
 	}
@@ -98,9 +102,9 @@ func (c *Client) ListProjects(ctx context.Context) ([]*database.Project, error) 
 		}
 	}()
 
-	var projects []*database.Project
+	var projects []*types.Project
 	for cursor.Next(ctx) {
-		var project database.Project
+		var project types.Project
 		idHolder := struct {
 			ID primitive.ObjectID `bson:"_id"`
 		}{}
@@ -110,7 +114,7 @@ func (c *Client) ListProjects(ctx context.Context) ([]*database.Project, error) 
 		if err := cursor.Decode(&project); err != nil {
 			return nil, err
 		}
-		project.ID = database.ID(idHolder.ID.Hex())
+		project.ID = types.ID(idHolder.ID.Hex())
 		projects = append(projects, &project)
 	}
 
@@ -118,8 +122,8 @@ func (c *Client) ListProjects(ctx context.Context) ([]*database.Project, error) 
 }
 
 // UpdateProject updates the given project.
-func (c *Client) UpdateProject(ctx context.Context, id string, name string) error {
-	objectID, err := primitive.ObjectIDFromHex(id)
+func (c *Client) UpdateProject(ctx context.Context, id types.ID, name string) error {
+	objectID, err := primitive.ObjectIDFromHex(id.String())
 	if err != nil {
 		return fmt.Errorf("%s: %w", id, database.ErrInvalidID)
 	}
@@ -127,7 +131,8 @@ func (c *Client) UpdateProject(ctx context.Context, id string, name string) erro
 	result := c.client.Database(c.config.Database).Collection("projects").FindOneAndUpdate(
 		ctx,
 		bson.M{
-			"_id": objectID,
+			"_id":   objectID,
+			"owner": types.UserIDFromCtx(ctx),
 		},
 		bson.M{
 			"$set": bson.M{
@@ -147,14 +152,15 @@ func (c *Client) UpdateProject(ctx context.Context, id string, name string) erro
 }
 
 // DeleteProject deletes the given project.
-func (c *Client) DeleteProject(ctx context.Context, id string) error {
-	objectID, err := primitive.ObjectIDFromHex(id)
+func (c *Client) DeleteProject(ctx context.Context, id types.ID) error {
+	objectID, err := primitive.ObjectIDFromHex(id.String())
 	if err != nil {
 		return err
 	}
 
 	_, err = c.client.Database(c.config.Database).Collection("projects").DeleteOne(ctx, bson.M{
-		"_id": objectID,
+		"_id":   objectID,
+		"owner": types.UserIDFromCtx(ctx),
 	})
 
 	return err

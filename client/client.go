@@ -21,8 +21,12 @@ type Client struct {
 }
 
 // New creates an instance of Client.
-func New() (*Client, error) {
-	conn, err := grpc.Dial(rpcAddr, grpc.WithInsecure())
+func New(userID string) (*Client, error) {
+	conn, err := grpc.Dial(
+		rpcAddr,
+		grpc.WithInsecure(),
+		grpc.WithUnaryInterceptor(unaryInterceptor(userID)),
+	)
 	if err != nil {
 		return nil, err
 	}

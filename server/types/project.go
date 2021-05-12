@@ -1,4 +1,4 @@
-package database
+package types
 
 import "time"
 
@@ -6,5 +6,6 @@ import "time"
 type Project struct {
 	ID        ID        `bson:"_id_fake"`
 	Name      string    `bson:"name"`
+	Owner     string    `bson:"owner"`
 	CreatedAt time.Time `bson:"created_at"`
 }

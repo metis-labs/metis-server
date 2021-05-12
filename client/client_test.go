@@ -2,8 +2,6 @@ package client_test
 
 import (
 	"context"
-	"log"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,69 +9,104 @@ import (
 	"google.golang.org/grpc/status"
 
 	"oss.navercorp.com/metis/metis-server/client"
-	"oss.navercorp.com/metis/metis-server/server"
 )
 
-func TestMain(m *testing.M) {
-	s, err := server.New(server.NewConfig())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err := s.Start(); err != nil {
-		log.Fatal(err)
-	}
-
-	code := m.Run()
-
-	if err := s.Shutdown(true); err != nil {
-		log.Fatal(err)
-	}
-	os.Exit(code)
-}
+const (
+	testUserA = "KR18401"
+	testUserB = "KR18817"
+)
 
 func TestClient(t *testing.T) {
 	t.Run("new/close test", func(t *testing.T) {
-		c, err := client.New()
+		cliA, err := client.New(testUserA)
+		assert.NoError(t, err)
+		defer func() {
+			err = cliA.Close()
+			assert.NoError(t, err)
+		}()
+	})
+
+	t.Run("invalid token test", func(t *testing.T) {
+		cli, err := client.New("")
 		assert.NoError(t, err)
 
-		err = c.Close()
-		assert.NoError(t, err)
+		_, err = cli.ListProjects(context.Background())
+		assert.Equal(t, codes.Unauthenticated, status.Convert(err).Code())
 	})
 }
 
 func TestProject(t *testing.T) {
-	cli, err := client.New()
+	cliA, err := client.New(testUserA)
 	assert.NoError(t, err)
 	defer func() {
-		err = cli.Close()
+		err = cliA.Close()
+		assert.NoError(t, err)
+	}()
+	cliB, err := client.New(testUserB)
+	assert.NoError(t, err)
+	defer func() {
+		err = cliB.Close()
 		assert.NoError(t, err)
 	}()
 
-	t.Run("create/update/delete project test", func(t *testing.T) {
-		pbProject, err := cli.CreateProject(context.Background(), t.Name())
+	t.Run("list project test", func(t *testing.T) {
+		ctxA := context.Background()
+		ctxB := context.Background()
+
+		pbProject, err := cliA.CreateProject(ctxA, t.Name())
 		assert.NoError(t, err)
 		assert.Equal(t, t.Name(), pbProject.Name)
 
-		ctx := context.Background()
+		defer func() {
+			err = cliA.DeleteProject(ctxA, pbProject.Id)
+			assert.NoError(t, err)
+		}()
 
-		projects, err := cli.ListProjects(ctx)
+		projects, err := cliB.ListProjects(ctxB)
+		assert.NoError(t, err)
+		assert.Empty(t, projects)
+
+		projects, err = cliA.ListProjects(ctxA)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, projects)
+	})
 
-		err = cli.UpdateProject(ctx, pbProject.Id, "updated")
+	t.Run("update project test", func(t *testing.T) {
+		ctxA := context.Background()
+
+		pbProject, err := cliA.CreateProject(ctxA, t.Name())
+		assert.NoError(t, err)
+		assert.Equal(t, t.Name(), pbProject.Name)
+
+		defer func() {
+			err = cliA.DeleteProject(context.Background(), pbProject.Id)
+			assert.NoError(t, err)
+		}()
+
+		err = cliA.UpdateProject(ctxA, pbProject.Id, "updated")
 		assert.NoError(t, err)
 
-		err = cli.UpdateProject(ctx, "invalid", "updated")
-		assert.Equal(t, codes.InvalidArgument, status.Convert(err).Code())
-
-		err = cli.UpdateProject(ctx, "000000000000000000000000", "updated")
+		err = cliB.UpdateProject(ctxA, pbProject.Id, "updated")
 		assert.Equal(t, codes.NotFound, status.Convert(err).Code())
 
-		err = cli.DeleteProject(context.Background(), pbProject.Id)
+		err = cliA.UpdateProject(ctxA, "invalid", "updated")
+		assert.Equal(t, codes.InvalidArgument, status.Convert(err).Code())
+
+		err = cliA.UpdateProject(ctxA, "000000000000000000000000", "updated")
+		assert.Equal(t, codes.NotFound, status.Convert(err).Code())
+	})
+
+	t.Run("delete project test", func(t *testing.T) {
+		ctxA := context.Background()
+
+		pbProject, err := cliA.CreateProject(ctxA, t.Name())
+		assert.NoError(t, err)
+		assert.Equal(t, t.Name(), pbProject.Name)
+
+		err = cliA.DeleteProject(ctxA, pbProject.Id)
 		assert.NoError(t, err)
 
-		err = cli.DeleteProject(context.Background(), pbProject.Id)
+		err = cliA.DeleteProject(ctxA, pbProject.Id)
 		assert.NoError(t, err)
 	})
 }

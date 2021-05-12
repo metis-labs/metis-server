@@ -1,4 +1,4 @@
-METIS_VERSION := 0.0.3
+METIS_VERSION := 0.0.4
 
 GO_SRC := $(shell find . -path ./vendor -prune -o -type f -name '*.go' -print)
 
