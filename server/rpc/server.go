@@ -15,6 +15,7 @@ import (
 	"oss.navercorp.com/metis/metis-server/api/converter"
 	"oss.navercorp.com/metis/metis-server/internal/log"
 	"oss.navercorp.com/metis/metis-server/server/database"
+	"oss.navercorp.com/metis/metis-server/server/types"
 )
 
 // Server is a normal server that processes the logic requested by the client.
@@ -110,7 +111,7 @@ func (s *Server) UpdateProject(
 	ctx context.Context,
 	req *pb.UpdateProjectRequest,
 ) (*pb.UpdateProjectResponse, error) {
-	if err := s.db.UpdateProject(ctx, req.ProjectId, req.ProjectName); err != nil {
+	if err := s.db.UpdateProject(ctx, types.ID(req.ProjectId), req.ProjectName); err != nil {
 		if errors.Is(err, database.ErrNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())
 		} else if errors.Is(err, database.ErrInvalidID) {
@@ -128,7 +129,7 @@ func (s *Server) DeleteProject(
 	ctx context.Context,
 	req *pb.DeleteProjectRequest,
 ) (*pb.DeleteProjectResponse, error) {
-	if err := s.db.DeleteProject(ctx, req.ProjectId); err != nil {
+	if err := s.db.DeleteProject(ctx, types.ID(req.ProjectId)); err != nil {
 		return nil, err
 	}
 

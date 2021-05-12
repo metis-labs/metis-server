@@ -4,11 +4,11 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb "oss.navercorp.com/metis/metis-server/api"
-	"oss.navercorp.com/metis/metis-server/server/database"
+	"oss.navercorp.com/metis/metis-server/server/types"
 )
 
 // ToProject converts the given model to Protobuf message.
-func ToProject(project *database.Project) *pb.Project {
+func ToProject(project *types.Project) *pb.Project {
 	return &pb.Project{
 		Id:        project.ID.String(),
 		Name:      project.Name,
@@ -17,7 +17,7 @@ func ToProject(project *database.Project) *pb.Project {
 }
 
 // ToProjects converts the given model to Protobuf message.
-func ToProjects(projects []*database.Project) []*pb.Project {
+func ToProjects(projects []*types.Project) []*pb.Project {
 	var pbProjects []*pb.Project
 	for _, project := range projects {
 		pbProjects = append(pbProjects, ToProject(project))
