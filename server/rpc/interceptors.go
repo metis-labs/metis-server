@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"google.golang.org/grpc"
@@ -10,6 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"oss.navercorp.com/metis/metis-server/internal/log"
+	"oss.navercorp.com/metis/metis-server/server/database"
 	"oss.navercorp.com/metis/metis-server/server/types"
 )
 
@@ -31,6 +33,7 @@ func unaryInterceptor(
 	if err == nil {
 		log.Logger.Infof("RPC : %q %s", info.FullMethod, time.Since(start))
 	} else {
+		err = toStatusError(err)
 		log.Logger.Errorf("RPC : %q %s: %q => %q", info.FullMethod, time.Since(start), req, err)
 	}
 
@@ -54,12 +57,12 @@ func streamInterceptor(
 }
 
 func authenticate(ctx context.Context) (context.Context, error) {
-	md, ok := metadata.FromIncomingContext(ctx)
+	data, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return nil, status.Errorf(codes.Unauthenticated, "metadata is not provided")
 	}
 
-	values := md["authorization"]
+	values := data["authorization"]
 	if len(values) == 0 {
 		return nil, status.Errorf(codes.Unauthenticated, "authorization token is not provided")
 	}
@@ -69,4 +72,16 @@ func authenticate(ctx context.Context) (context.Context, error) {
 	}
 
 	return types.CtxWithUserID(ctx, userID), nil
+}
+
+// toStatusError returns a status.Error from the given logic error. If an error
+// occurs while executing logic in API handler, gRPC status.error should be
+// returned so that the client can know more about the status of the request.
+func toStatusError(err error) error {
+	if errors.Is(err, database.ErrNotFound) {
+		return status.Error(codes.NotFound, err.Error())
+	} else if errors.Is(err, database.ErrInvalidID) {
+		return status.Error(codes.InvalidArgument, err.Error())
+	}
+	return status.Error(codes.Internal, err.Error())
 }
