@@ -18,12 +18,10 @@ type Server struct {
 	shutdownCh chan struct{}
 }
 
-const rpcPort = 10118
-
 // New creates a new instance of Server.
 func New(conf *Config) (*Server, error) {
 	dbClient := mongodb.NewClient(conf.Mongo)
-	rpcServer, err := rpc.NewServer(dbClient)
+	rpcServer, err := rpc.NewServer(conf.RPC, dbClient)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +39,7 @@ func (s *Server) Start() error {
 		return err
 	}
 
-	return s.rpcServer.Start(rpcPort)
+	return s.rpcServer.Start()
 }
 
 // Shutdown shuts down this server.

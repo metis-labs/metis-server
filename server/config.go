@@ -1,9 +1,14 @@
 package server
 
-import "oss.navercorp.com/metis/metis-server/server/database/mongodb"
+import (
+	"oss.navercorp.com/metis/metis-server/server/database/mongodb"
+	"oss.navercorp.com/metis/metis-server/server/rpc"
+)
 
 // The following are the defaults for the Server config.
 const (
+	DefaultRPCPort = 10118
+
 	DefaultMongoConnectionURI        = "mongodb://localhost:27017"
 	DefaultMongoConnectionTimeoutSec = 5
 	DefaultMongoPingTimeoutSec       = 5
@@ -12,6 +17,7 @@ const (
 
 // Config is the configuration for creating a Server instance.
 type Config struct {
+	RPC   *rpc.Config     `json:"RPC"`
 	Mongo *mongodb.Config `json:"Mongo"`
 }
 
@@ -19,6 +25,9 @@ type Config struct {
 // for most of the configurations.
 func NewConfig() *Config {
 	return &Config{
+		RPC: &rpc.Config{
+			Port: DefaultRPCPort,
+		},
 		Mongo: &mongodb.Config{
 			ConnectionURI:        DefaultMongoConnectionURI,
 			ConnectionTimeoutSec: DefaultMongoConnectionTimeoutSec,

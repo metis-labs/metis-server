@@ -92,6 +92,13 @@ func handleSignals(s *server.Server) int {
 
 func init() {
 	cmd := newServerCommand()
+	cmd.Flags().IntVar(
+		&conf.RPC.Port,
+		"rpc-port",
+		server.DefaultRPCPort,
+		"RPC port",
+	)
+
 	cmd.Flags().StringVar(
 		&conf.Mongo.ConnectionURI,
 		"mongo-connection-uri",

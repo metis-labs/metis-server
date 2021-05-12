@@ -7,6 +7,7 @@ import (
 
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 
 	pb "oss.navercorp.com/metis/metis-server/api"
 	"oss.navercorp.com/metis/metis-server/api/converter"
@@ -15,16 +16,24 @@ import (
 	"oss.navercorp.com/metis/metis-server/server/types"
 )
 
+// Config is the configuration for creating a Server instance.
+type Config struct {
+	Port     int
+	CertFile string
+	KeyFile  string
+}
+
 // Server is a normal server that processes the logic requested by the client.
 type Server struct {
 	pb.UnimplementedMetisServer
 
+	conf       *Config
 	db         database.Database
 	grpcServer *grpc.Server
 }
 
 // NewServer creates a new instance of Server.
-func NewServer(db database.Database) (*Server, error) {
+func NewServer(conf *Config, db database.Database) (*Server, error) {
 	opts := []grpc.ServerOption{
 		grpc.UnaryInterceptor(grpcmiddleware.ChainUnaryServer(
 			unaryInterceptor,
@@ -34,7 +43,17 @@ func NewServer(db database.Database) (*Server, error) {
 		)),
 	}
 
+	if conf.CertFile != "" && conf.KeyFile != "" {
+		creds, err := credentials.NewServerTLSFromFile(conf.CertFile, conf.KeyFile)
+		if err != nil {
+			log.Logger.Error(err)
+			return nil, err
+		}
+		opts = append(opts, grpc.Creds(creds))
+	}
+
 	rpcServer := &Server{
+		conf:       conf,
 		db:         db,
 		grpcServer: grpc.NewServer(opts...),
 	}
@@ -44,13 +63,13 @@ func NewServer(db database.Database) (*Server, error) {
 }
 
 // Start starts to handle requests on incoming connections.
-func (s *Server) Start(rpcPort int) error {
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", rpcPort))
+func (s *Server) Start() error {
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", s.conf.Port))
 	if err != nil {
 		return err
 	}
 
-	log.Logger.Infof("RPCServer is running on %d", rpcPort)
+	log.Logger.Infof("RPCServer is running on %d", s.conf.Port)
 
 	go func() {
 		if err := s.grpcServer.Serve(listener); err != nil {
