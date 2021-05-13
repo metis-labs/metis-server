@@ -75,6 +75,7 @@ func (c *Client) CreateProject(ctx context.Context, name string) (*types.Project
 	result, err := c.client.Database(c.config.Database).Collection("projects").InsertOne(ctx, bson.M{
 		"name":       name,
 		"owner":      types.UserIDFromCtx(ctx),
+		"status":     "created",
 		"created_at": now,
 	})
 	if err != nil {
@@ -91,7 +92,8 @@ func (c *Client) CreateProject(ctx context.Context, name string) (*types.Project
 // ListProjects returns the list of projects.
 func (c *Client) ListProjects(ctx context.Context) ([]*types.Project, error) {
 	cursor, err := c.client.Database(c.config.Database).Collection("projects").Find(ctx, bson.M{
-		"owner": types.UserIDFromCtx(ctx),
+		"owner":  types.UserIDFromCtx(ctx),
+		"status": "created",
 	}, options.Find())
 	if err != nil {
 		return nil, err
@@ -133,6 +135,7 @@ func (c *Client) UpdateProject(ctx context.Context, id types.ID, name string) er
 		bson.M{
 			"_id":   objectID,
 			"owner": types.UserIDFromCtx(ctx),
+			"status": "created",
 		},
 		bson.M{
 			"$set": bson.M{
@@ -158,9 +161,14 @@ func (c *Client) DeleteProject(ctx context.Context, id types.ID) error {
 		return err
 	}
 
-	_, err = c.client.Database(c.config.Database).Collection("projects").DeleteOne(ctx, bson.M{
+	_, err = c.client.Database(c.config.Database).Collection("projects").UpdateOne(ctx, bson.M{
 		"_id":   objectID,
 		"owner": types.UserIDFromCtx(ctx),
+	}, bson.M{
+		"$set": bson.M{
+			"status": "deleted",
+			"deleted_at": time.Now(),
+		},
 	})
 
 	return err

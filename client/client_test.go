@@ -18,7 +18,7 @@ const (
 
 func TestClient(t *testing.T) {
 	t.Run("new/close test", func(t *testing.T) {
-		cliA, err := client.New(testUserA)
+		cliA, err := client.Dial(testServer.RPCAddr(), client.Option{UserID: testUserA})
 		assert.NoError(t, err)
 		defer func() {
 			err = cliA.Close()
@@ -27,7 +27,7 @@ func TestClient(t *testing.T) {
 	})
 
 	t.Run("invalid token test", func(t *testing.T) {
-		cli, err := client.New("")
+		cli, err := client.Dial(testServer.RPCAddr(), client.Option{UserID: ""})
 		assert.NoError(t, err)
 
 		_, err = cli.ListProjects(context.Background())
@@ -36,13 +36,13 @@ func TestClient(t *testing.T) {
 }
 
 func TestProject(t *testing.T) {
-	cliA, err := client.New(testUserA)
+	cliA, err := client.Dial(testServer.RPCAddr(), client.Option{UserID: testUserA})
 	assert.NoError(t, err)
 	defer func() {
 		err = cliA.Close()
 		assert.NoError(t, err)
 	}()
-	cliB, err := client.New(testUserB)
+	cliB, err := client.Dial(testServer.RPCAddr(), client.Option{UserID: testUserB})
 	assert.NoError(t, err)
 	defer func() {
 		err = cliB.Close()

@@ -11,6 +11,7 @@ import (
 
 // Server receives requests from the client, stores data in the database,
 type Server struct {
+	conf *Config
 	rpcServer *rpc.Server
 	db        database.Database
 
@@ -27,6 +28,7 @@ func New(conf *Config) (*Server, error) {
 	}
 
 	return &Server{
+		conf: conf,
 		rpcServer:  rpcServer,
 		db:         dbClient,
 		shutdownCh: make(chan struct{}),
@@ -67,4 +69,9 @@ func (s *Server) Shutdown(graceful bool) error {
 // ShutdownCh returns the shutdown channel.
 func (s *Server) ShutdownCh() <-chan struct{} {
 	return s.shutdownCh
+}
+
+// RPCAddr returns the RPC address.
+func (s *Server) RPCAddr() string {
+	return s.conf.RPCAddr()
 }

@@ -10,7 +10,6 @@ import (
 )
 
 const (
-	rpcAddr = "localhost:10118"
 	timeout = 10 * time.Second
 )
 
@@ -20,8 +19,19 @@ type Client struct {
 	client pb.MetisClient
 }
 
-// New creates an instance of Client.
-func New(userID string) (*Client, error) {
+// Option configures how we set up the client.
+type Option struct {
+	UserID   string
+	CertFile string
+}
+
+// Dial creates an instance of Client.
+func Dial(rpcAddr string, opts ...Option) (*Client, error) {
+	var userID string
+	if len(opts) > 0 && opts[0].UserID != "" {
+		userID = opts[0].UserID
+	}
+
 	conn, err := grpc.Dial(
 		rpcAddr,
 		grpc.WithInsecure(),

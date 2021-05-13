@@ -1,6 +1,8 @@
 package server
 
 import (
+	"fmt"
+
 	"oss.navercorp.com/metis/metis-server/server/database/mongodb"
 	"oss.navercorp.com/metis/metis-server/server/rpc"
 )
@@ -19,6 +21,11 @@ const (
 type Config struct {
 	RPC   *rpc.Config     `json:"RPC"`
 	Mongo *mongodb.Config `json:"Mongo"`
+}
+
+// RPCAddr returns the RPC address.
+func (c Config) RPCAddr() string {
+	return fmt.Sprintf("localhost:%d", c.RPC.Port)
 }
 
 // NewConfig returns a Config struct that contains reasonable defaults

@@ -1,4 +1,4 @@
-package client
+package client_test
 
 import (
 	"log"
@@ -11,6 +11,8 @@ import (
 )
 
 var portOffset = 10000
+
+var testServer *server.Server
 
 func TestMain(m *testing.M) {
 	s, err := server.New(&server.Config{
@@ -27,14 +29,15 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	testServer = s
 
-	if err := s.Start(); err != nil {
+	if err := testServer.Start(); err != nil {
 		log.Fatal(err)
 	}
 
 	code := m.Run()
 
-	if err := s.Shutdown(true); err != nil {
+	if err := testServer.Shutdown(true); err != nil {
 		log.Fatal(err)
 	}
 	os.Exit(code)
