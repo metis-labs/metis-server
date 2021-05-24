@@ -89,6 +89,41 @@ func (c *Client) CreateProject(ctx context.Context, name string) (*types.Project
 	}, nil
 }
 
+// FindProject returns the project of the given ID.
+func (c *Client) FindProject(ctx context.Context, id types.ID) (*types.Project, error) {
+	objectID, err := primitive.ObjectIDFromHex(id.String())
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", id, database.ErrInvalidID)
+	}
+
+	result := c.client.Database(c.config.Database).Collection("projects").FindOne(ctx, bson.M{
+		"_id": objectID,
+		"owner":  types.UserIDFromCtx(ctx),
+		"status": "created",
+	}, options.FindOne())
+
+
+	if result.Err() != nil {
+		if result.Err() == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("%s: %w", id, database.ErrNotFound)
+		}
+		return nil, result.Err()
+	}
+
+	project := &types.Project{}
+	idHolder := struct {
+		ID primitive.ObjectID `bson:"_id"`
+	}{}
+	if err := result.Decode(&idHolder); err != nil {
+		return nil, err
+	}
+	if err := result.Decode(project); err != nil {
+		return nil, err
+	}
+	project.ID = types.ID(idHolder.ID.Hex())
+	return project, nil
+}
+
 // ListProjects returns the list of projects.
 func (c *Client) ListProjects(ctx context.Context) ([]*types.Project, error) {
 	cursor, err := c.client.Database(c.config.Database).Collection("projects").Find(ctx, bson.M{
@@ -133,8 +168,8 @@ func (c *Client) UpdateProject(ctx context.Context, id types.ID, name string) er
 	result := c.client.Database(c.config.Database).Collection("projects").FindOneAndUpdate(
 		ctx,
 		bson.M{
-			"_id":   objectID,
-			"owner": types.UserIDFromCtx(ctx),
+			"_id":    objectID,
+			"owner":  types.UserIDFromCtx(ctx),
 			"status": "created",
 		},
 		bson.M{
@@ -166,7 +201,7 @@ func (c *Client) DeleteProject(ctx context.Context, id types.ID) error {
 		"owner": types.UserIDFromCtx(ctx),
 	}, bson.M{
 		"$set": bson.M{
-			"status": "deleted",
+			"status":     "deleted",
 			"deleted_at": time.Now(),
 		},
 	})
