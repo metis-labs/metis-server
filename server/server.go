@@ -7,12 +7,14 @@ import (
 	"oss.navercorp.com/metis/metis-server/server/database"
 	"oss.navercorp.com/metis/metis-server/server/database/mongodb"
 	"oss.navercorp.com/metis/metis-server/server/rpc"
+	"oss.navercorp.com/metis/metis-server/server/web"
 )
 
 // Server receives requests from the client, stores data in the database,
 type Server struct {
-	conf *Config
+	conf      *Config
 	rpcServer *rpc.Server
+	webServer *web.Server
 	db        database.Database
 
 	shutdown   bool
@@ -27,9 +29,15 @@ func New(conf *Config) (*Server, error) {
 		return nil, err
 	}
 
+	webServer, err := web.NewServer(conf.Web, dbClient)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Server{
-		conf: conf,
+		conf:       conf,
 		rpcServer:  rpcServer,
+		webServer:  webServer,
 		db:         dbClient,
 		shutdownCh: make(chan struct{}),
 	}, nil
@@ -38,6 +46,10 @@ func New(conf *Config) (*Server, error) {
 // Start starts the server by opening the rpc port.
 func (s *Server) Start() error {
 	if err := s.db.Dial(context.Background()); err != nil {
+		return err
+	}
+
+	if err := s.webServer.Start(); err != nil {
 		return err
 	}
 
@@ -54,6 +66,12 @@ func (s *Server) Shutdown(graceful bool) error {
 		s.rpcServer.GracefulStop()
 	} else {
 		s.rpcServer.Stop()
+	}
+
+	if graceful {
+		s.webServer.GracefulStop()
+	} else {
+		s.webServer.Stop()
 	}
 
 	if err := s.db.Close(context.Background()); err != nil {

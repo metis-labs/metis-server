@@ -21,6 +21,7 @@ type Database interface {
 	Close(ctx context.Context) error
 
 	CreateProject(ctx context.Context, name string) (*types.Project, error)
+	FindProject(ctx context.Context, id types.ID) (*types.Project, error)
 	ListProjects(ctx context.Context) ([]*types.Project, error)
 	UpdateProject(ctx context.Context, id types.ID, name string) error
 	DeleteProject(ctx context.Context, id types.ID) error
