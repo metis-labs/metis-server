@@ -24,12 +24,12 @@ type Server struct {
 // New creates a new instance of Server.
 func New(conf *Config) (*Server, error) {
 	dbClient := mongodb.NewClient(conf.Mongo)
-	rpcServer, err := rpc.NewServer(conf.RPC, dbClient)
+	rpcServer, err := rpc.NewServer(conf.RPC, conf.Yorkie, dbClient)
 	if err != nil {
 		return nil, err
 	}
 
-	webServer, err := web.NewServer(conf.Web, dbClient)
+	webServer, err := web.NewServer(conf.Web, dbClient, conf.Yorkie)
 	if err != nil {
 		return nil, err
 	}

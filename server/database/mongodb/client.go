@@ -97,11 +97,10 @@ func (c *Client) FindProject(ctx context.Context, id types.ID) (*types.Project, 
 	}
 
 	result := c.client.Database(c.config.Database).Collection("projects").FindOne(ctx, bson.M{
-		"_id": objectID,
+		"_id":    objectID,
 		"owner":  types.UserIDFromCtx(ctx),
 		"status": "created",
 	}, options.FindOne())
-
 
 	if result.Err() != nil {
 		if result.Err() == mongo.ErrNoDocuments {

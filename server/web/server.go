@@ -15,6 +15,7 @@ import (
 	"oss.navercorp.com/metis/metis-server/internal/log"
 	"oss.navercorp.com/metis/metis-server/server/database"
 	"oss.navercorp.com/metis/metis-server/server/types"
+	"oss.navercorp.com/metis/metis-server/server/yorkie"
 )
 
 const (
@@ -31,14 +32,16 @@ type Config struct {
 type Server struct {
 	conf       *Config
 	db         database.Database
+	yorkieConf *yorkie.Config
 	httpServer *http.Server
 }
 
 // NewServer creates a new instance of Server.
-func NewServer(conf *Config, db database.Database) (*Server, error) {
+func NewServer(conf *Config, db database.Database, yorkieConf *yorkie.Config) (*Server, error) {
 	server := &Server{
-		conf: conf,
-		db:   db,
+		conf:       conf,
+		db:         db,
+		yorkieConf: yorkieConf,
 	}
 
 	r := mux.NewRouter()
@@ -104,6 +107,10 @@ func (s *Server) HandleAuth(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleAuth(req *yorkieTypes.AuthWebhookRequest) (*yorkieTypes.AuthWebhookResponse, error) {
+	if s.yorkieConf.WebhookToken == req.Token {
+		return &yorkieTypes.AuthWebhookResponse{Allowed: true}, nil
+	}
+
 	switch req.Method {
 	case yorkieTypes.AttachDocument, yorkieTypes.DetachDocument, yorkieTypes.PushPull:
 		docKey, err := key.FromBSONKey(req.Attributes[0].Key)

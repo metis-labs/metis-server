@@ -13,7 +13,9 @@ import (
 	"oss.navercorp.com/metis/metis-server/api/converter"
 	"oss.navercorp.com/metis/metis-server/internal/log"
 	"oss.navercorp.com/metis/metis-server/server/database"
+	"oss.navercorp.com/metis/metis-server/server/projects"
 	"oss.navercorp.com/metis/metis-server/server/types"
+	"oss.navercorp.com/metis/metis-server/server/yorkie"
 )
 
 // Config is the configuration for creating a Server instance.
@@ -28,12 +30,13 @@ type Server struct {
 	pb.UnimplementedMetisServer
 
 	conf       *Config
+	yorkieConf *yorkie.Config
 	db         database.Database
 	grpcServer *grpc.Server
 }
 
 // NewServer creates a new instance of Server.
-func NewServer(conf *Config, db database.Database) (*Server, error) {
+func NewServer(conf *Config, yorkieConf *yorkie.Config, db database.Database) (*Server, error) {
 	opts := []grpc.ServerOption{
 		grpc.UnaryInterceptor(grpcmiddleware.ChainUnaryServer(
 			unaryInterceptor,
@@ -54,6 +57,7 @@ func NewServer(conf *Config, db database.Database) (*Server, error) {
 
 	rpcServer := &Server{
 		conf:       conf,
+		yorkieConf: yorkieConf,
 		db:         db,
 		grpcServer: grpc.NewServer(opts...),
 	}
@@ -97,7 +101,7 @@ func (s *Server) CreateProject(
 	ctx context.Context,
 	req *pb.CreateProjectRequest,
 ) (*pb.CreateProjectResponse, error) {
-	project, err := s.db.CreateProject(ctx, req.ProjectName)
+	project, err := projects.Create(ctx, s.db, s.yorkieConf, req.ProjectName)
 	if err != nil {
 		return nil, err
 	}
@@ -112,13 +116,13 @@ func (s *Server) ListProjects(
 	ctx context.Context,
 	req *pb.ListProjectsRequest,
 ) (*pb.ListProjectsResponse, error) {
-	projects, err := s.db.ListProjects(ctx)
+	projectList, err := s.db.ListProjects(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	return &pb.ListProjectsResponse{
-		Projects: converter.ToProjects(projects),
+		Projects: converter.ToProjects(projectList),
 	}, nil
 }
 
