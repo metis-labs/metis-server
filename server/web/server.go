@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/yorkie-team/yorkie/pkg/document/key"
 	yorkieTypes "github.com/yorkie-team/yorkie/pkg/types"
 
@@ -40,11 +41,12 @@ func NewServer(conf *Config, db database.Database) (*Server, error) {
 		db:   db,
 	}
 
-	serveMux := http.NewServeMux()
-	serveMux.Handle("/auth", http.HandlerFunc(server.HandleAuth))
+	r := mux.NewRouter()
+	r.HandleFunc("/auth", server.HandleAuth)
+	r.Use(elapsedTimeMiddleware)
 
 	server.httpServer = &http.Server{
-		Handler:      serveMux,
+		Handler:      r,
 		Addr:         fmt.Sprintf(":%d", conf.Port),
 		WriteTimeout: writeTimeout,
 		ReadTimeout:  readTimeout,
@@ -73,13 +75,10 @@ func (s *Server) Start() error {
 
 // HandleAuth handles the given authorization webhook request.
 func (s *Server) HandleAuth(w http.ResponseWriter, r *http.Request) {
-	start := time.Now()
-
 	req, err := yorkieTypes.NewAuthWebhookRequest(r.Body)
 	if err != nil {
 		log.Logger.Error(err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Logger.Infof("WEB : /auth %s => %q", time.Since(start), err)
 		return
 	}
 
@@ -87,7 +86,6 @@ func (s *Server) HandleAuth(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Logger.Infof("WEB : /auth %s => %q", time.Since(start), err)
 		return
 	}
 
@@ -95,18 +93,14 @@ func (s *Server) HandleAuth(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Logger.Infof("WEB : /auth %s => %q", time.Since(start), err)
 		return
 	}
 
 	if _, err := w.Write(resBody); err != nil {
 		log.Logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Logger.Infof("WEB : /auth %s => %q", time.Since(start), err)
 		return
 	}
-
-	log.Logger.Infof("WEB : /auth %s", time.Since(start))
 }
 
 func (s *Server) handleAuth(req *yorkieTypes.AuthWebhookRequest) (*yorkieTypes.AuthWebhookResponse, error) {
