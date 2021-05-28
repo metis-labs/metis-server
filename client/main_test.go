@@ -8,16 +8,24 @@ import (
 	"oss.navercorp.com/metis/metis-server/server"
 	"oss.navercorp.com/metis/metis-server/server/database/mongodb"
 	"oss.navercorp.com/metis/metis-server/server/rpc"
+	"oss.navercorp.com/metis/metis-server/server/web"
+	"oss.navercorp.com/metis/metis-server/server/yorkie"
 )
-
-var portOffset = 10000
 
 var testServer *server.Server
 
 func TestMain(m *testing.M) {
 	s, err := server.New(&server.Config{
 		RPC: &rpc.Config{
-			Port: server.DefaultRPCPort + portOffset,
+			Port: server.DefaultRPCPort,
+		},
+		Web: &web.Config{
+			Port: server.DefaultWebPort,
+		},
+		Yorkie: &yorkie.Config{
+			Addr:         server.DefaultYorkieAddr,
+			WebhookToken: server.DefaultYorkieWebhookToken,
+			Collection:   server.DefaultYorkieCollection,
 		},
 		Mongo: &mongodb.Config{
 			ConnectionURI:        server.DefaultMongoConnectionURI,

@@ -1,6 +1,21 @@
 version: '3.3'
 
 services:
+  yorkie:
+    image: 'yorkieteam/yorkie:latest'
+    container_name: 'yorkie'
+    command: [
+        'agent',
+        '--mongo-connection-uri',
+        'mongodb://mongo:27017',
+        '--authorization-webhook-url',
+        'http://host.docker.internal:10119/auth',
+    ]
+    restart: always
+    ports:
+      - '11101:11101'
+    depends_on:
+      - mongo
   mongo:
     image: 'mongo:latest'
     container_name: 'mongo'

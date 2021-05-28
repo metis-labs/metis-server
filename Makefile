@@ -24,6 +24,7 @@ lint:
 	golangci-lint run ./...
 
 test:
+	go clean -testcache
 	go test -v ./...
 
 docker:

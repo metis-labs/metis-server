@@ -34,7 +34,7 @@ func unaryInterceptor(
 		log.Logger.Infof("RPC : %q %s", info.FullMethod, time.Since(start))
 	} else {
 		err = toStatusError(err)
-		log.Logger.Errorf("RPC : %q %s: %q => %q", info.FullMethod, time.Since(start), req, err)
+		log.Logger.Warnf("RPC : %q %s: %q => %q", info.FullMethod, time.Since(start), req, err)
 	}
 
 	return resp, err
@@ -50,7 +50,7 @@ func streamInterceptor(
 	if err == nil {
 		log.Logger.Infof("stream %q => ok", info.FullMethod)
 	} else {
-		log.Logger.Errorf("stream %q => %s", info.FullMethod, err.Error())
+		log.Logger.Warn("stream %q => %s", info.FullMethod, err.Error())
 	}
 
 	return err
