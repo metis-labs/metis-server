@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/gorilla/mux v1.7.3
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
+	github.com/rs/xid v1.2.1
 	github.com/spf13/cobra v1.1.3
 	github.com/stretchr/testify v1.7.0
 	github.com/yorkie-team/yorkie v0.1.5-0.20210527143421-52e29ed99922

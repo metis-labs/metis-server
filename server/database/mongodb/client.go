@@ -70,7 +70,7 @@ func (c *Client) Close(ctx context.Context) error {
 }
 
 // CreateProject creates a new project of the given name.
-func (c *Client) CreateProject(ctx context.Context, name string) (*types.Project, error) {
+func (c *Client) CreateProject(ctx context.Context, name string) (*types.ProjectInfo, error) {
 	now := time.Now()
 	result, err := c.client.Database(c.config.Database).Collection("projects").InsertOne(ctx, bson.M{
 		"name":       name,
@@ -82,7 +82,7 @@ func (c *Client) CreateProject(ctx context.Context, name string) (*types.Project
 		return nil, err
 	}
 
-	return &types.Project{
+	return &types.ProjectInfo{
 		ID:        types.ID(result.InsertedID.(primitive.ObjectID).Hex()),
 		Name:      name,
 		CreatedAt: now,
@@ -90,7 +90,7 @@ func (c *Client) CreateProject(ctx context.Context, name string) (*types.Project
 }
 
 // FindProject returns the project of the given ID.
-func (c *Client) FindProject(ctx context.Context, id types.ID) (*types.Project, error) {
+func (c *Client) FindProject(ctx context.Context, id types.ID) (*types.ProjectInfo, error) {
 	objectID, err := primitive.ObjectIDFromHex(id.String())
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", id, database.ErrInvalidID)
@@ -109,7 +109,7 @@ func (c *Client) FindProject(ctx context.Context, id types.ID) (*types.Project, 
 		return nil, result.Err()
 	}
 
-	project := &types.Project{}
+	project := &types.ProjectInfo{}
 	idHolder := struct {
 		ID primitive.ObjectID `bson:"_id"`
 	}{}
@@ -124,7 +124,7 @@ func (c *Client) FindProject(ctx context.Context, id types.ID) (*types.Project, 
 }
 
 // ListProjects returns the list of projects.
-func (c *Client) ListProjects(ctx context.Context) ([]*types.Project, error) {
+func (c *Client) ListProjects(ctx context.Context) ([]*types.ProjectInfo, error) {
 	cursor, err := c.client.Database(c.config.Database).Collection("projects").Find(ctx, bson.M{
 		"owner":  types.UserIDFromCtx(ctx),
 		"status": "created",
@@ -138,9 +138,9 @@ func (c *Client) ListProjects(ctx context.Context) ([]*types.Project, error) {
 		}
 	}()
 
-	var projects []*types.Project
+	var projects []*types.ProjectInfo
 	for cursor.Next(ctx) {
-		var project types.Project
+		var project types.ProjectInfo
 		idHolder := struct {
 			ID primitive.ObjectID `bson:"_id"`
 		}{}

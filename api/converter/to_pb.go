@@ -8,7 +8,7 @@ import (
 )
 
 // ToProject converts the given model to Protobuf message.
-func ToProject(project *types.Project) *pb.Project {
+func ToProject(project *types.ProjectInfo) *pb.Project {
 	return &pb.Project{
 		Id:        project.ID.String(),
 		Name:      project.Name,
@@ -17,7 +17,7 @@ func ToProject(project *types.Project) *pb.Project {
 }
 
 // ToProjects converts the given model to Protobuf message.
-func ToProjects(projects []*types.Project) []*pb.Project {
+func ToProjects(projects []*types.ProjectInfo) []*pb.Project {
 	var pbProjects []*pb.Project
 	for _, project := range projects {
 		pbProjects = append(pbProjects, ToProject(project))
