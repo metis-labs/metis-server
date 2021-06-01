@@ -69,7 +69,7 @@ func (s *Server) Start() error {
 
 	go func() {
 		if err := s.httpServer.Serve(listener); err != nil {
-			log.Logger.Errorf("fail to serve: %s", err.Error())
+			log.Logger.Warnf("http server: %s", err.Error())
 		}
 	}()
 

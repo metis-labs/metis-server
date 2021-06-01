@@ -1,4 +1,4 @@
-package client_test
+package test
 
 import (
 	"log"
@@ -13,6 +13,11 @@ import (
 )
 
 var testServer *server.Server
+
+const (
+	testUserA = "KR18401"
+	testUserB = "KR18817"
+)
 
 func TestMain(m *testing.M) {
 	s, err := server.New(&server.Config{

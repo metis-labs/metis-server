@@ -80,8 +80,10 @@ func authenticate(ctx context.Context) (context.Context, error) {
 func toStatusError(err error) error {
 	if errors.Is(err, database.ErrNotFound) {
 		return status.Error(codes.NotFound, err.Error())
-	} else if errors.Is(err, database.ErrInvalidID) {
+	}
+	if errors.Is(err, database.ErrInvalidID) {
 		return status.Error(codes.InvalidArgument, err.Error())
 	}
+
 	return status.Error(codes.Internal, err.Error())
 }

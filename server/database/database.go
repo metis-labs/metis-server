@@ -25,4 +25,7 @@ type Database interface {
 	ListProjects(ctx context.Context) ([]*types.ProjectInfo, error)
 	UpdateProject(ctx context.Context, id types.ID, name string) error
 	DeleteProject(ctx context.Context, id types.ID) error
+
+	CreateTemplate(ctx context.Context, name, contents string) (*types.TemplateInfo, error)
+	FindTemplate(ctx context.Context, id types.ID) (*types.TemplateInfo, error)
 }

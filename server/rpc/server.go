@@ -77,7 +77,7 @@ func (s *Server) Start() error {
 
 	go func() {
 		if err := s.grpcServer.Serve(listener); err != nil {
-			log.Logger.Errorf("fail to serve: %s", err.Error())
+			log.Logger.Warnf("grpc server: %s", err.Error())
 		} else {
 			log.Logger.Info("grpc server closed")
 		}

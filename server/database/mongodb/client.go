@@ -207,3 +207,58 @@ func (c *Client) DeleteProject(ctx context.Context, id types.ID) error {
 
 	return err
 }
+
+// CreateTemplate creates a new template.
+func (c *Client) CreateTemplate(ctx context.Context, name, contents string) (*types.TemplateInfo, error) {
+	owner := types.UserIDFromCtx(ctx)
+	now := time.Now()
+	result, err := c.client.Database(c.config.Database).Collection("projects").InsertOne(ctx, bson.M{
+		"name":       name,
+		"owner":      owner,
+		"contents":   contents,
+		"created_at": now,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.TemplateInfo{
+		ID:        types.ID(result.InsertedID.(primitive.ObjectID).Hex()),
+		Name:      name,
+		Owner:     owner,
+		Contents:  contents,
+		CreatedAt: now,
+	}, nil
+}
+
+// FindTemplate returns the template of the given ID.
+func (c *Client) FindTemplate(ctx context.Context, id types.ID) (*types.TemplateInfo, error) {
+	objectID, err := primitive.ObjectIDFromHex(id.String())
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", id, database.ErrInvalidID)
+	}
+
+	result := c.client.Database(c.config.Database).Collection("templates").FindOne(ctx, bson.M{
+		"_id": objectID,
+	}, options.FindOne())
+
+	if result.Err() != nil {
+		if result.Err() == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("%s: %w", id, database.ErrNotFound)
+		}
+		return nil, result.Err()
+	}
+
+	template := &types.TemplateInfo{}
+	idHolder := struct {
+		ID primitive.ObjectID `bson:"_id"`
+	}{}
+	if err := result.Decode(&idHolder); err != nil {
+		return nil, err
+	}
+	if err := result.Decode(template); err != nil {
+		return nil, err
+	}
+	template.ID = types.ID(idHolder.ID.Hex())
+	return template, nil
+}

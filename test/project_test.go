@@ -1,4 +1,4 @@
-package client_test
+package test
 
 import (
 	"context"
@@ -10,30 +10,6 @@ import (
 
 	"oss.navercorp.com/metis/metis-server/client"
 )
-
-const (
-	testUserA = "KR18401"
-	testUserB = "KR18817"
-)
-
-func TestClient(t *testing.T) {
-	t.Run("new/close test", func(t *testing.T) {
-		cliA, err := client.Dial(testServer.RPCAddr(), client.Option{UserID: testUserA})
-		assert.NoError(t, err)
-		defer func() {
-			err = cliA.Close()
-			assert.NoError(t, err)
-		}()
-	})
-
-	t.Run("invalid token test", func(t *testing.T) {
-		cli, err := client.Dial(testServer.RPCAddr(), client.Option{UserID: ""})
-		assert.NoError(t, err)
-
-		_, err = cli.ListProjects(context.Background())
-		assert.Equal(t, codes.Unauthenticated, status.Convert(err).Code())
-	})
-}
 
 func TestProject(t *testing.T) {
 	cliA, err := client.Dial(testServer.RPCAddr(), client.Option{UserID: testUserA})
