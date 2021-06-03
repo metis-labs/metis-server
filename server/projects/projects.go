@@ -26,7 +26,7 @@ func Create(
 	}
 
 	// TODO(youngteac.hong): Extract yorkie packages such as database.
-	cli, err := client.Dial(yorkieConf.Addr, client.Option{
+	cli, err := client.Dial(yorkieConf.RPCAddr, client.Option{
 		Token: yorkieConf.WebhookToken,
 	})
 	if err != nil {

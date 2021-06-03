@@ -100,6 +100,13 @@ func init() {
 	)
 
 	cmd.Flags().StringVar(
+		&conf.Yorkie.RPCAddr,
+		"yorkie-rpc-addr",
+		server.DefaultYorkieRPCAddr,
+		"Yorkie's RPC Address",
+	)
+
+	cmd.Flags().StringVar(
 		&conf.Mongo.ConnectionURI,
 		"mongo-connection-uri",
 		server.DefaultMongoConnectionURI,

@@ -28,7 +28,7 @@ func TestMain(m *testing.M) {
 			Port: server.DefaultWebPort,
 		},
 		Yorkie: &yorkie.Config{
-			Addr:         server.DefaultYorkieAddr,
+			RPCAddr:      server.DefaultYorkieRPCAddr,
 			WebhookToken: server.DefaultYorkieWebhookToken,
 			Collection:   server.DefaultYorkieCollection,
 		},

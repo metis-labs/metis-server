@@ -20,7 +20,7 @@ const (
 	DefaultMongoPingTimeoutSec       = 5
 	DefaultMongoDatabase             = "metis"
 
-	DefaultYorkieAddr         = "localhost:11101"
+	DefaultYorkieRPCAddr      = "localhost:11101"
 	DefaultYorkieWebhookToken = "metis-server"
 	DefaultYorkieCollection   = "projects"
 )
@@ -55,7 +55,7 @@ func NewConfig() *Config {
 			Database:             DefaultMongoDatabase,
 		},
 		Yorkie: &yorkie.Config{
-			Addr:         DefaultYorkieAddr,
+			RPCAddr:      DefaultYorkieRPCAddr,
 			WebhookToken: DefaultYorkieWebhookToken,
 			Collection:   DefaultYorkieCollection,
 		},
