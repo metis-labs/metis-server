@@ -78,12 +78,13 @@ func updateProject(doc *document.Document, p *types.Project) error {
 			network.SetString("id", n.ID)
 			network.SetString("name", n.Name)
 			dependencies := network.SetNewObject("dependencies")
+			thirdPartyDeps := dependencies.SetNewObject("thirdPartyDeps")
 			blocks := network.SetNewObject("blocks")
 			links := network.SetNewObject("links")
 
 			// dependencies
-			for dID, d := range n.Dependencies {
-				dependency := dependencies.SetNewObject(dID)
+			for dID, d := range n.Dependencies.ThirdPartyDeps {
+				dependency := thirdPartyDeps.SetNewObject(dID)
 				dependency.SetString("id", d.ID)
 				dependency.SetString("name", d.Name)
 				if d.Alias != "" {

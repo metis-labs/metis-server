@@ -17,33 +17,41 @@ type Dependency struct {
 	Package string `json:"package"`
 }
 
+type Dependencies struct {
+	BuiltInDeps    map[string]*Dependency `json:"built_in_deps"`
+	ThirdPartyDeps map[string]*Dependency `json:"third_party_deps"`
+	ProjectDeps    map[string]*Dependency `json:"project_deps"`
+}
+
 // NewDefaultDependencies creates a new instance of dependency map with default value.
-func NewDefaultDependencies() map[string]*Dependency {
-	dependencies := make(map[string]*Dependency)
+func NewDefaultDependencies() *Dependencies {
+	thirdPartyDeps := make(map[string]*Dependency)
 
 	torch := &Dependency{
 		ID:   xid.New().String(),
 		Name: "torch",
 	}
-	dependencies[torch.ID] = torch
+	thirdPartyDeps[torch.ID] = torch
 
 	torchNN := &Dependency{
 		ID:    xid.New().String(),
 		Name:  "torch.nn",
 		Alias: "nn",
 	}
-	dependencies[torchNN.ID] = torchNN
+	thirdPartyDeps[torchNN.ID] = torchNN
 
-	return dependencies
+	return &Dependencies{
+		ThirdPartyDeps: thirdPartyDeps,
+	}
 }
 
 // Network is data that represents a machine learning network.
 type Network struct {
-	ID           string                 `json:"id"`
-	Name         string                 `json:"name"`
-	Dependencies map[string]*Dependency `json:"dependencies"`
-	Blocks       map[string]*Block      `json:"blocks"`
-	Links        map[string]*Link       `json:"links"`
+	ID           string            `json:"id"`
+	Name         string            `json:"name"`
+	Dependencies *Dependencies     `json:"dependencies"`
+	Blocks       map[string]*Block `json:"blocks"`
+	Links        map[string]*Link  `json:"links"`
 }
 
 // NewDefaultNetwork creates a new instance of Network with the default value.
