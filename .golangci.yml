@@ -1,6 +1,6 @@
 linters-settings:
   goimports:
-    local-prefixes: oss.navercorp.com/metis/metis-server
+    local-prefixes: github.com/metis-labs/metis-server
 
 linters:
   enable:

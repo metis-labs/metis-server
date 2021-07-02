@@ -1,4 +1,4 @@
-module oss.navercorp.com/metis/metis-server
+module github.com/metis-labs/metis-server
 
 go 1.16
 
